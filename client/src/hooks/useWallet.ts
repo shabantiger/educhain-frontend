@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { blockchainService, type CertificateData } from "@/lib/blockchain";
 import { useToast } from "@/hooks/use-toast";
 
 // Declare global ethereum object for TypeScript
@@ -17,28 +17,38 @@ export function useWallet() {
   const [error, setError] = useState<string>("");
   const { toast } = useToast();
 
-  // Query for certificates when wallet is connected
-  const { data: certificatesData, isLoading: certificatesLoading } = useQuery({
-    queryKey: ["/api/certificates/wallet", walletAddress],
-    queryFn: () => api.getCertificatesByWallet(walletAddress),
+  // Query for certificates when wallet is connected - use API fallback
+  const { data: certificates, isLoading: certificatesLoading, refetch: refetchCertificates } = useQuery({
+    queryKey: ["certificates", walletAddress],
+    queryFn: async () => {
+      try {
+        // Try blockchain service first
+        return await blockchainService.getCertificatesByStudent(walletAddress);
+      } catch (error) {
+        // Fallback to API endpoint
+        const response = await fetch(`/api/blockchain/certificates/student/${walletAddress}`);
+        if (!response.ok) throw new Error('Failed to fetch certificates');
+        const data = await response.json();
+        return data.certificates || [];
+      }
+    },
     enabled: isConnected && !!walletAddress,
   });
-
-  const certificates = certificatesData?.certificates || [];
 
   // Check if wallet is already connected
   useEffect(() => {
     const checkConnection = async () => {
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0]);
+      try {
+        const connected = await blockchainService.isWalletConnected();
+        if (connected) {
+          const address = await blockchainService.getWalletAddress();
+          if (address) {
+            setWalletAddress(address);
             setIsConnected(true);
           }
-        } catch (error) {
-          console.error("Error checking wallet connection:", error);
         }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error);
       }
     };
 
@@ -67,52 +77,18 @@ export function useWallet() {
   }, []);
 
   const connect = async () => {
-    if (typeof window.ethereum === 'undefined') {
-      setError("MetaMask is not installed. Please install MetaMask and try again.");
-      toast({
-        title: "Wallet not found",
-        description: "Please install MetaMask or another Web3 wallet to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     setError("");
 
     try {
-      // Request account access
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      if (accounts.length === 0) {
-        throw new Error("No accounts found. Please check your wallet.");
-      }
-
-      const address = accounts[0];
+      const address = await blockchainService.connectWallet();
       setWalletAddress(address);
-
-      // Try to connect with the backend
-      try {
-        await api.connectWallet(address);
-        setIsConnected(true);
-        toast({
-          title: "Wallet connected",
-          description: "Successfully connected to your wallet and verified certificates.",
-        });
-      } catch (apiError: any) {
-        // If API connection fails, still allow wallet connection for verification
-        if (apiError.status === 404) {
-          setIsConnected(true);
-          toast({
-            title: "Wallet connected",
-            description: "Wallet connected successfully. No certificates found for this address.",
-          });
-        } else {
-          throw apiError;
-        }
-      }
+      setIsConnected(true);
+      
+      toast({
+        title: "Wallet connected",
+        description: "Successfully connected to your wallet and blockchain.",
+      });
     } catch (error: any) {
       setError(error.message || "Failed to connect wallet");
       toast({
@@ -137,41 +113,89 @@ export function useWallet() {
 
   const verifyCertificate = async (certificateId: string) => {
     try {
-      const result = await api.verifyCertificate(certificateId);
+      // Try blockchain service first
+      const result = await blockchainService.verifyCertificate(certificateId);
       return result;
     } catch (error: any) {
-      throw new Error(error.message || "Failed to verify certificate");
+      // Fallback to API endpoint
+      try {
+        const response = await fetch(`/api/blockchain/certificate/${certificateId}`);
+        if (!response.ok) throw new Error('Certificate not found');
+        const data = await response.json();
+        return data.certificate;
+      } catch (apiError: any) {
+        throw new Error(error.message || "Failed to verify certificate");
+      }
+    }
+  };
+
+  const mintCertificate = async (
+    certificateId: string,
+    studentAddress: string,
+    studentName: string,
+    courseName: string,
+    ipfsHash: string
+  ) => {
+    try {
+      const txHash = await blockchainService.mintCertificate(
+        certificateId,
+        studentAddress,
+        studentName,
+        courseName,
+        ipfsHash
+      );
+      
+      // Refetch certificates after minting
+      await refetchCertificates();
+      
+      return txHash;
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to mint certificate");
+    }
+  };
+
+  const revokeCertificate = async (certificateId: string) => {
+    try {
+      const txHash = await blockchainService.revokeCertificate(certificateId);
+      
+      // Refetch certificates after revoking
+      await refetchCertificates();
+      
+      return txHash;
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to revoke certificate");
     }
   };
 
   const switchNetwork = async (chainId: string) => {
-    if (typeof window.ethereum === 'undefined') {
-      throw new Error("MetaMask is not installed");
-    }
-
     try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId }],
-      });
+      await blockchainService.switchToCorrectNetwork(chainId);
     } catch (error: any) {
-      // This error code indicates that the chain has not been added to MetaMask
-      if (error.code === 4902) {
-        throw new Error("Please add this network to your wallet first");
-      }
-      throw error;
+      throw new Error(error.message || "Failed to switch network");
+    }
+  };
+
+  const getNetworkInfo = async () => {
+    try {
+      return await blockchainService.getNetworkInfo();
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to get network info");
     }
   };
 
   return {
     isConnected,
     walletAddress,
-    certificates,
+    certificates: certificates || [],
     isLoading: isLoading || certificatesLoading,
     error,
     connect,
     disconnect,
     verifyCertificate,
+    mintCertificate,
+    revokeCertificate,
     switchNetwork,
+    getNetworkInfo,
+    refetchCertificates,
   };
 }

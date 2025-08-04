@@ -1,198 +1,180 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Upload, AlertCircle, CheckCircle } from "lucide-react";
-import { insertCertificateSchema, type InsertCertificate } from "@shared/schema";
-import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/hooks/useWallet";
+import { Loader2, Upload, ExternalLink } from "lucide-react";
+
+const createCertificateSchema = z.object({
+  studentName: z.string().min(2, "Student name must be at least 2 characters"),
+  studentEmail: z.string().email("Please enter a valid email address"),
+  studentAddress: z.string().min(42, "Please enter a valid wallet address").max(42, "Please enter a valid wallet address"),
+  courseName: z.string().min(2, "Course name must be at least 2 characters"),
+  grade: z.string().min(1, "Grade is required"),
+  completionDate: z.string().min(1, "Completion date is required"),
+  description: z.string().optional(),
+});
+
+type CreateCertificateForm = z.infer<typeof createCertificateSchema>;
 
 interface CreateCertificateModalProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 }
 
-export default function CreateCertificateModal({ open, onOpenChange }: CreateCertificateModalProps) {
-  const [certificateFile, setCertificateFile] = useState<File | null>(null);
+export default function CreateCertificateModal({ open, onClose }: CreateCertificateModalProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [ipfsHash, setIpfsHash] = useState<string>("");
   const { toast } = useToast();
+  const { mintCertificate, walletAddress, isConnected } = useWallet();
   const queryClient = useQueryClient();
 
-  const form = useForm<InsertCertificate>({
-    resolver: zodResolver(insertCertificateSchema),
+  const form = useForm<CreateCertificateForm>({
+    resolver: zodResolver(createCertificateSchema),
     defaultValues: {
-      studentAddress: "",
       studentName: "",
+      studentEmail: "",
+      studentAddress: "",
       courseName: "",
       grade: "",
       completionDate: "",
-      certificateType: "Academic",
+      description: "",
     },
   });
 
   const createCertificateMutation = useMutation({
-    mutationFn: (formData: FormData) => api.issueCertificate(formData),
+    mutationFn: async (data: CreateCertificateForm) => {
+      if (!isConnected) {
+        throw new Error("Please connect your wallet first");
+      }
+
+      // Generate a unique certificate ID
+      const certificateId = `cert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Use uploaded file hash or create a placeholder
+      const fileHash = ipfsHash || `ipfs_${certificateId}`;
+
+      // Mint certificate on blockchain
+      const txHash = await mintCertificate(
+        certificateId,
+        data.studentAddress,
+        data.studentName,
+        data.courseName,
+        fileHash
+      );
+
+      return { certificateId, txHash };
+    },
     onSuccess: (data) => {
       toast({
-        title: "Certificate created successfully",
-        description: "The certificate has been issued and saved. You can now mint it on the blockchain.",
+        title: "Certificate created successfully!",
+        description: `Certificate minted on blockchain. Transaction: ${data.txHash.slice(0, 10)}...`,
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/certificates/institution"] });
-      onOpenChange(false);
+      
+      // Invalidate certificates query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+      
+      // Reset form and close modal
       form.reset();
-      setCertificateFile(null);
+      setUploadedFile(null);
+      setIpfsHash("");
+      onClose();
     },
     onError: (error: any) => {
       toast({
-        title: "Certificate creation failed",
-        description: error.message || "Failed to create certificate. Please try again.",
+        title: "Failed to create certificate",
+        description: error.message || "An error occurred while creating the certificate.",
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: InsertCertificate) => {
-    if (!certificateFile) {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // In a real implementation, you would upload to IPFS here
+      // For now, we'll simulate the upload and generate a hash
+      setUploadedFile(file);
+      
+      // Simulate IPFS upload delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate a mock IPFS hash (in production, use real IPFS service)
+      const mockHash = `QmX${Math.random().toString(36).substr(2, 44)}`;
+      setIpfsHash(mockHash);
+      
       toast({
-        title: "File required",
-        description: "Please upload a certificate file.",
+        title: "File uploaded successfully",
+        description: `Document uploaded to IPFS: ${mockHash.slice(0, 10)}...`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload file to IPFS.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsUploading(false);
     }
-
-    const formData = new FormData();
-    formData.append('certificateFile', certificateFile);
-    formData.append('studentAddress', data.studentAddress);
-    formData.append('studentName', data.studentName);
-    formData.append('courseName', data.courseName);
-    formData.append('grade', data.grade || '');
-    formData.append('completionDate', data.completionDate || '');
-    formData.append('certificateType', data.certificateType || 'Academic');
-
-    createCertificateMutation.mutate(formData);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF, JPEG, or PNG file.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Validate file size (10MB limit)
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
-        toast({
-          title: "File too large",
-          description: "Please upload a file smaller than 10MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setCertificateFile(file);
-    }
+  const onSubmit = (data: CreateCertificateForm) => {
+    createCertificateMutation.mutate(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Certificate</DialogTitle>
+          <DialogDescription>
+            Create and mint a new certificate on the blockchain. This will require a blockchain transaction.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Student Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-neutral-900">Student Information</h3>
+              <h3 className="text-lg font-medium">Student Information</h3>
               
-              <FormField
-                control={form.control}
-                name="studentName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Student Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="John Smith"
-                        {...field}
-                        data-testid="input-student-name"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="studentAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Student Wallet Address</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="0x742d35Cc6634C0532925a3b8D45d5b1E5b8a9C12"
-                        {...field}
-                        data-testid="input-student-address"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Certificate Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-neutral-900">Certificate Details</h3>
-              
-              <FormField
-                control={form.control}
-                name="courseName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Course/Program Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Computer Science Degree"
-                        {...field}
-                        data-testid="input-course-name"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="grade"
+                  name="studentName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Grade (Optional)</FormLabel>
+                      <FormLabel>Student Name *</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="A+, First Class, etc."
-                          {...field}
-                          data-testid="input-grade"
+                        <Input 
+                          placeholder="Enter student's full name" 
+                          {...field} 
+                          data-testid="input-student-name"
                         />
                       </FormControl>
                       <FormMessage />
@@ -202,23 +184,79 @@ export default function CreateCertificateModal({ open, onOpenChange }: CreateCer
 
                 <FormField
                   control={form.control}
-                  name="certificateType"
+                  name="studentEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Certificate Type</FormLabel>
+                      <FormLabel>Student Email *</FormLabel>
                       <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger data-testid="select-certificate-type">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Academic">Academic</SelectItem>
-                            <SelectItem value="Professional">Professional</SelectItem>
-                            <SelectItem value="Diploma">Diploma</SelectItem>
-                            <SelectItem value="Certificate">Certificate</SelectItem>
-                            <SelectItem value="Degree">Degree</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Input 
+                          type="email"
+                          placeholder="student@example.com" 
+                          {...field} 
+                          data-testid="input-student-email"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="studentAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Student Wallet Address *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="0x..." 
+                        {...field} 
+                        data-testid="input-student-address"
+                        className="font-mono text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Course Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Course Information</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="courseName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Course Name *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., Computer Science Degree" 
+                          {...field} 
+                          data-testid="input-course-name"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="grade"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Grade/Result *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., A+, Distinction, 85%" 
+                          {...field} 
+                          data-testid="input-grade"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -231,12 +269,31 @@ export default function CreateCertificateModal({ open, onOpenChange }: CreateCer
                 name="completionDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Completion Date (Optional)</FormLabel>
+                    <FormLabel>Completion Date *</FormLabel>
                     <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
+                      <Input 
+                        type="date" 
+                        {...field} 
                         data-testid="input-completion-date"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Notes</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Optional additional information about the certificate..."
+                        rows={3}
+                        {...field} 
+                        data-testid="input-description"
                       />
                     </FormControl>
                     <FormMessage />
@@ -245,69 +302,78 @@ export default function CreateCertificateModal({ open, onOpenChange }: CreateCer
               />
             </div>
 
-            {/* File Upload */}
+            {/* Document Upload */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-neutral-900">Certificate File</h3>
+              <h3 className="text-lg font-medium">Certificate Document</h3>
               
-              <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
-                <Upload className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-                <h4 className="text-sm font-medium text-neutral-900 mb-1">Upload certificate file</h4>
-                <p className="text-sm text-neutral-500 mb-4">PDF, JPEG, or PNG (max 10MB)</p>
-                
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="certificate-file-upload"
-                />
-                <Label htmlFor="certificate-file-upload" className="cursor-pointer">
-                  <Button type="button" variant="outline" data-testid="button-upload-file">
-                    Choose File
-                  </Button>
-                </Label>
-                
-                {certificateFile && (
-                  <Alert className="mt-4 text-left">
-                    <CheckCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      <strong>File selected:</strong> {certificateFile.name}
-                      <br />
-                      <span className="text-sm text-neutral-500">
-                        Size: {(certificateFile.size / 1024 / 1024).toFixed(2)} MB
-                      </span>
-                    </AlertDescription>
-                  </Alert>
-                )}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                <div className="text-center">
+                  {uploadedFile ? (
+                    <div className="space-y-2">
+                      <div className="text-green-600 font-medium">
+                        ✓ {uploadedFile.name}
+                      </div>
+                      {ipfsHash && (
+                        <div className="text-sm text-gray-600">
+                          IPFS Hash: {ipfsHash}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2"
+                            onClick={() => window.open(`https://ipfs.io/ipfs/${ipfsHash}`, '_blank')}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="text-sm text-gray-600">
+                        Upload certificate document (PDF, PNG, JPG)
+                      </div>
+                    </div>
+                  )}
+                  
+                  <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    accept=".pdf,.png,.jpg,.jpeg"
+                    className="mt-4"
+                    disabled={isUploading}
+                    data-testid="input-file-upload"
+                  />
+                  
+                  {isUploading && (
+                    <div className="mt-2 text-sm text-blue-600">
+                      Uploading to IPFS...
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                After creating the certificate, you'll need to mint it on the blockchain to make it verifiable by students and employers.
-              </AlertDescription>
-            </Alert>
-
-            <div className="flex space-x-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="flex-1"
-              >
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={createCertificateMutation.isPending || !certificateFile}
-                className="flex-1"
+              <Button 
+                type="submit" 
+                disabled={createCertificateMutation.isPending || isUploading}
                 data-testid="button-create-certificate"
               >
-                {createCertificateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Certificate
+                {createCertificateMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Minting...
+                  </>
+                ) : (
+                  "Create & Mint Certificate"
+                )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

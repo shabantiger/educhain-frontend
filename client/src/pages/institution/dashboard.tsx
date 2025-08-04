@@ -20,6 +20,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import CreateCertificateModal from "@/components/CreateCertificateModal";
+import BlockchainStatus from "@/components/BlockchainStatus";
 import { useLocation } from "wouter";
 
 export default function InstitutionDashboard() {
@@ -142,7 +143,7 @@ export default function InstitutionDashboard() {
                   <div className="ml-4">
                     <p className="text-neutral-500 text-sm">Certificates Issued</p>
                     <p className="text-2xl font-semibold text-neutral-900" data-testid="stat-certificates">
-                      {stats?.totalCertificates || 0}
+                      {(stats as any)?.totalCertificates || 0}
                     </p>
                   </div>
                 </div>
@@ -158,7 +159,7 @@ export default function InstitutionDashboard() {
                   <div className="ml-4">
                     <p className="text-neutral-500 text-sm">Active Certificates</p>
                     <p className="text-2xl font-semibold text-neutral-900" data-testid="stat-active">
-                      {stats?.activeCertificates || 0}
+                      {(stats as any)?.activeCertificates || 0}
                     </p>
                   </div>
                 </div>
@@ -174,7 +175,7 @@ export default function InstitutionDashboard() {
                   <div className="ml-4">
                     <p className="text-neutral-500 text-sm">Blockchain Transactions</p>
                     <p className="text-2xl font-semibold text-neutral-900" data-testid="stat-transactions">
-                      {stats?.activeCertificates || 0}
+                      {(stats as any)?.activeCertificates || 0}
                     </p>
                   </div>
                 </div>
@@ -190,8 +191,8 @@ export default function InstitutionDashboard() {
                   <div className="ml-4">
                     <p className="text-neutral-500 text-sm">Monthly Usage</p>
                     <p className="text-2xl font-semibold text-neutral-900" data-testid="stat-usage">
-                      {subscription?.usage?.certificatesThisMonth || 0}/
-                      {subscription?.subscription?.planId === 'enterprise' ? '∞' : '500'}
+                      {(subscription as any)?.usage?.certificatesThisMonth || 0}/
+                      {(subscription as any)?.subscription?.planId === 'enterprise' ? '∞' : '500'}
                     </p>
                   </div>
                 </div>
@@ -229,32 +230,38 @@ export default function InstitutionDashboard() {
         </CardContent>
       </Card>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-start space-x-4 p-4 rounded-lg bg-neutral-50">
-                <div className={`p-2 rounded-full ${activity.bg}`}>
-                  <activity.icon className={`w-4 h-4 ${activity.color}`} />
+      {/* Two column layout for Recent Activity and Blockchain Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-start space-x-4 p-4 rounded-lg bg-neutral-50">
+                  <div className={`p-2 rounded-full ${activity.bg}`}>
+                    <activity.icon className={`w-4 h-4 ${activity.color}`} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-neutral-900">{activity.message}</p>
+                    <p className="text-sm text-neutral-500">{activity.details}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-neutral-900">{activity.message}</p>
-                  <p className="text-sm text-neutral-500">{activity.details}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Blockchain Status */}
+        <BlockchainStatus />
+      </div>
 
       {/* Create Certificate Modal */}
       <CreateCertificateModal
         open={isCertificateModalOpen}
-        onOpenChange={setIsCertificateModalOpen}
+        onClose={() => setIsCertificateModalOpen(false)}
       />
     </div>
   );
