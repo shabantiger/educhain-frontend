@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +15,14 @@ import {
   Search,
   CheckCircle,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
+  Coins,
+  Loader2
 } from "lucide-react";
 import { Link } from "wouter";
 import { useWallet } from "@/hooks/useWallet";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 import { format } from "date-fns";
 
 export default function StudentPortal() {
@@ -30,8 +35,62 @@ export default function StudentPortal() {
     certificates, 
     connect, 
     isLoading,
-    verifyCertificate
+    verifyCertificate,
+    mintCertificate
   } = useWallet();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Query for student's issued certificates (from backend)
+  const { data: issuedCertificates = [], isLoading: loadingIssued } = useQuery({
+    queryKey: ["student-certificates", walletAddress],
+    queryFn: () => api.getCertificatesByWallet(walletAddress!),
+    enabled: isConnected && !!walletAddress,
+  });
+
+  // Mint certificate mutation
+  const mintCertificateMutation = useMutation({
+    mutationFn: async (certificate: any) => {
+      if (!isConnected || !walletAddress) {
+        throw new Error("Please connect your wallet first");
+      }
+
+      // Mint certificate on blockchain
+      const txHash = await mintCertificate(
+        certificate.id,
+        walletAddress,
+        certificate.studentName,
+        certificate.courseName,
+        certificate.ipfsHash || `ipfs_${certificate.id}`
+      );
+
+      // Update certificate status in backend
+      await api.mintCertificateToBlockchain(certificate.id, {
+        tokenId: Date.now(), // In production, extract from transaction receipt
+        walletAddress: walletAddress,
+        transactionHash: txHash
+      });
+
+      return { txHash, certificateId: certificate.id };
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Certificate minted successfully!",
+        description: `Certificate has been minted to the blockchain. Transaction: ${data.txHash.slice(0, 10)}...`,
+      });
+      
+      // Refetch certificates to update status
+      queryClient.invalidateQueries({ queryKey: ["student-certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to mint certificate",
+        description: error.message || "An error occurred while minting the certificate.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleVerification = async () => {
     if (!verificationId.trim()) return;
@@ -128,6 +187,53 @@ export default function StudentPortal() {
             {/* Student Certificates */}
             <div>
               <h2 className="text-xl font-semibold text-neutral-900 mb-6">Your Certificates</h2>
+              
+              {/* Show issued certificates waiting to be minted */}
+              {issuedCertificates.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-medium text-neutral-700 mb-4">Available to Mint</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {issuedCertificates.filter((cert: any) => !cert.isMinted).map((certificate: any) => (
+                      <Card key={certificate.id} className="border-blue-200 bg-blue-50">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h4 className="font-semibold text-blue-900">{certificate.courseName}</h4>
+                              <p className="text-sm text-blue-700">{certificate.institutionName}</p>
+                              <p className="text-xs text-blue-600">Grade: {certificate.grade}</p>
+                            </div>
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                              Ready to Mint
+                            </Badge>
+                          </div>
+                          
+                          <Button 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => mintCertificateMutation.mutate(certificate)}
+                            disabled={mintCertificateMutation.isPending}
+                            data-testid={`mint-certificate-${certificate.id}`}
+                          >
+                            {mintCertificateMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Minting...
+                              </>
+                            ) : (
+                              <>
+                                <Coins className="w-4 h-4 mr-2" />
+                                Mint to Blockchain
+                              </>
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <h3 className="text-lg font-medium text-neutral-700 mb-4">Minted Certificates</h3>
               
               {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -188,4 +188,14 @@ export const api = {
     const response = await fetch(`${API_BASE}/api/certificates/verify/${id}`);
     return handleResponse(response);
   },
+
+  // Mint certificate to blockchain (student action)
+  mintCertificateToBlockchain: async (certificateId: string, data: { tokenId: number; walletAddress: string; transactionHash: string }) => {
+    const response = await fetch(`${API_BASE}/api/certificates/${certificateId}/mint`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
 };

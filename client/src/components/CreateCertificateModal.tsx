@@ -68,11 +68,7 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
 
   const createCertificateMutation = useMutation({
     mutationFn: async (data: CreateCertificateForm) => {
-      if (!isConnected) {
-        throw new Error("Please connect your wallet first");
-      }
-
-      // First, create the certificate using your backend API
+      // Create the certificate using your backend API (issuance only)
       const formData = new FormData();
       formData.append('studentName', data.studentName);
       formData.append('studentEmail', data.studentEmail);
@@ -83,45 +79,18 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
       if (data.description) formData.append('description', data.description);
       if (uploadedFile) formData.append('certificate', uploadedFile);
 
-      // Issue certificate through your backend (which handles IPFS and database)
+      // Issue certificate through your backend (stores in database and IPFS)
       const certificateResponse = await api.issueCertificate(formData);
       
-      // If backend supports on-chain minting, it might return transaction details
-      // Otherwise, we can mint it separately using the blockchain service
-      if (certificateResponse.tokenId && certificateResponse.transactionHash) {
-        return {
-          certificateId: certificateResponse.id,
-          txHash: certificateResponse.transactionHash,
-          tokenId: certificateResponse.tokenId
-        };
-      } else {
-        // Fallback: mint on blockchain using the certificate data
-        const certificateId = certificateResponse.id;
-        const fileHash = certificateResponse.ipfsHash || ipfsHash || `ipfs_${certificateId}`;
-
-        const txHash = await mintCertificate(
-          certificateId,
-          data.studentAddress,
-          data.studentName,
-          data.courseName,
-          fileHash
-        );
-
-        // Update the certificate with blockchain info
-        if (txHash && walletAddress) {
-          await api.updateCertificateAfterMint(certificateId, {
-            tokenId: Date.now(), // In production, extract from transaction receipt
-            walletAddress: walletAddress
-          });
-        }
-
-        return { certificateId, txHash };
-      }
+      return {
+        certificateId: certificateResponse.id,
+        message: 'Certificate issued successfully. Student can now mint it to blockchain.'
+      };
     },
     onSuccess: (data) => {
       toast({
-        title: "Certificate created successfully!",
-        description: `Certificate minted on blockchain. Transaction: ${data.txHash.slice(0, 10)}...`,
+        title: "Certificate issued successfully!",
+        description: "Certificate has been created and stored. Student can now mint it to their wallet.",
       });
       
       // Invalidate certificates query to refresh the list
@@ -135,8 +104,8 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
     },
     onError: (error: any) => {
       toast({
-        title: "Failed to create certificate",
-        description: error.message || "An error occurred while creating the certificate.",
+        title: "Failed to issue certificate",
+        description: error.message || "An error occurred while issuing the certificate.",
         variant: "destructive",
       });
     },
@@ -182,40 +151,12 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Certificate</DialogTitle>
+          <DialogTitle>Issue New Certificate</DialogTitle>
           <DialogDescription>
-            Create and mint a new certificate on the blockchain. This will require a blockchain transaction.
+            Issue a new certificate for a student. The certificate will be stored in the database and IPFS. 
+            Students can later mint it to the blockchain from their portal.
           </DialogDescription>
         </DialogHeader>
-
-        {/* Wallet Connection Check */}
-        {!isConnected && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-center gap-2 text-yellow-800">
-              <AlertTriangle className="w-5 h-5" />
-              <span className="font-medium">Wallet Connection Required</span>
-            </div>
-            <p className="text-sm text-yellow-700 mt-1">
-              Please connect your wallet to issue certificates on the blockchain.
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={connect} 
-              className="mt-2"
-              disabled={isLoading}
-              data-testid="button-connect-wallet"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                "Connect Wallet"
-              )}
-            </Button>
-          </div>
-        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -427,18 +368,16 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
               </Button>
               <Button 
                 type="submit" 
-                disabled={createCertificateMutation.isPending || isUploading || !isConnected}
-                data-testid="button-create-certificate"
+                disabled={createCertificateMutation.isPending || isUploading}
+                data-testid="button-issue-certificate"
               >
                 {createCertificateMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating Certificate...
+                    Issuing Certificate...
                   </>
-                ) : !isConnected ? (
-                  "Connect Wallet First"
                 ) : (
-                  "Create & Mint Certificate"
+                  "Issue Certificate"
                 )}
               </Button>
             </DialogFooter>
