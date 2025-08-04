@@ -43,20 +43,35 @@ export interface CertificateData {
 }
 
 export class ServerBlockchainService {
-  private contract: ethers.Contract;
+  private contract: ethers.Contract | null = null;
+  private isConfigured: boolean = false;
 
   constructor() {
-    if (!CONTRACT_ADDRESS || !parsedABI.length || !ETHEREUM_RPC_URL) {
-      throw new Error('Missing blockchain configuration. Please set CONTRACT_ADDRESS, CONTRACT_ABI, and ETHEREUM_RPC_URL environment variables.');
+    if (CONTRACT_ADDRESS && parsedABI.length && ETHEREUM_RPC_URL) {
+      try {
+        this.contract = new ethers.Contract(CONTRACT_ADDRESS, parsedABI, provider);
+        this.isConfigured = true;
+      } catch (error) {
+        console.warn('Failed to initialize blockchain contract:', error);
+        this.isConfigured = false;
+      }
+    } else {
+      console.log('Blockchain configuration not provided. Some features will be disabled.');
+      this.isConfigured = false;
     }
-    
-    this.contract = new ethers.Contract(CONTRACT_ADDRESS, parsedABI, provider);
+  }
+
+  private throwIfNotConfigured() {
+    if (!this.isConfigured || !this.contract) {
+      throw new Error('Blockchain service is not configured. Please set CONTRACT_ADDRESS, CONTRACT_ABI, and ETHEREUM_RPC_URL environment variables.');
+    }
   }
 
   // Verify a certificate exists on-chain (read-only operation)
   async verifyCertificate(certificateId: string): Promise<CertificateData | null> {
+    this.throwIfNotConfigured();
     try {
-      const certificateData = await this.contract.getCertificate(certificateId);
+      const certificateData = await this.contract!.getCertificate(certificateId);
       
       // Check if certificate exists (assuming the contract returns default values for non-existent certificates)
       if (!certificateData || certificateData.studentAddress === ethers.ZeroAddress) {
@@ -81,8 +96,9 @@ export class ServerBlockchainService {
 
   // Get all certificates for a student address (read-only operation)
   async getCertificatesByStudent(studentAddress: string): Promise<CertificateData[]> {
+    this.throwIfNotConfigured();
     try {
-      const certificateIds = await this.contract.getCertificatesByStudent(studentAddress);
+      const certificateIds = await this.contract!.getCertificatesByStudent(studentAddress);
       const certificates: CertificateData[] = [];
 
       for (const id of certificateIds) {
@@ -101,8 +117,9 @@ export class ServerBlockchainService {
 
   // Get all certificates issued by an institution (read-only operation)
   async getCertificatesByInstitution(institutionAddress: string): Promise<CertificateData[]> {
+    this.throwIfNotConfigured();
     try {
-      const certificateIds = await this.contract.getCertificatesByInstitution(institutionAddress);
+      const certificateIds = await this.contract!.getCertificatesByInstitution(institutionAddress);
       const certificates: CertificateData[] = [];
 
       for (const id of certificateIds) {
@@ -126,6 +143,7 @@ export class ServerBlockchainService {
 
   // Get network information
   async getNetworkInfo(): Promise<{ chainId: number; name: string }> {
+    this.throwIfNotConfigured();
     try {
       const network = await provider.getNetwork();
       return {

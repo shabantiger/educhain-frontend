@@ -87,11 +87,28 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+// Generic User schema for authentication
+export const userSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  email: z.string().email(),
+  password: z.string(),
+  createdAt: z.date(),
+});
+
+export const insertUserSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
 // Types
 export type Institution = z.infer<typeof institutionSchema>;
 export type Student = z.infer<typeof studentSchema>;
 export type Certificate = z.infer<typeof certificateSchema>;
 export type Subscription = z.infer<typeof subscriptionSchema>;
+export type User = z.infer<typeof userSchema>;
 export type InsertInstitution = z.infer<typeof insertInstitutionSchema>;
 export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginCredentials = z.infer<typeof loginSchema>;

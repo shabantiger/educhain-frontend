@@ -15,7 +15,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         contractAddress: config.contractAddress,
         rpcUrl: config.rpcUrl,
-        hasABI: config.contractABI.length > 0
+        hasABI: config.contractABI.length > 0,
+        isConfigured: !!(config.contractAddress && config.rpcUrl && config.contractABI.length > 0)
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -34,7 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ certificate });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   });
 
@@ -45,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const certificates = await serverBlockchainService.getCertificatesByStudent(address);
       res.json({ certificates });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   });
 
@@ -56,7 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const certificates = await serverBlockchainService.getCertificatesByInstitution(address);
       res.json({ certificates });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   });
 
@@ -66,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const networkInfo = await serverBlockchainService.getNetworkInfo();
       res.json(networkInfo);
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   });
 
