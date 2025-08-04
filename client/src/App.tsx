@@ -13,6 +13,8 @@ import Certificates from "@/pages/institution/certificates";
 import Verification from "@/pages/institution/verification";
 import SubscriptionPage from "@/pages/institution/subscription";
 import StudentPortal from "@/pages/student/portal";
+import AdminLogin from "@/pages/admin/login";
+import AdminDashboard from "@/pages/admin/dashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +24,10 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/student" component={StudentPortal} />
+      
+      {/* Admin Routes */}
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       
       {/* Protected Institution Routes */}
       <Route path="/dashboard">

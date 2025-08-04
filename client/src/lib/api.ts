@@ -80,14 +80,6 @@ export const api = {
   },
 
   // Certificate endpoints
-  getCertificates: async () => {
-    const authHeaders = getAuthHeaders();
-    const response = await fetch(`${API_BASE}/api/certificates/institution`, {
-      headers: authHeaders,
-    });
-    return handleResponse(response);
-  },
-
   issueCertificate: async (formData: FormData) => {
     const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/certificates/issue`, {
@@ -100,13 +92,18 @@ export const api = {
 
   updateCertificateAfterMint: async (certificateId: string, data: { tokenId: number; walletAddress: string }) => {
     const authHeaders = getAuthHeaders();
-    const response = await fetch(`${API_BASE}/api/certificates/${certificateId}/onchain-mint`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
+    const response = await fetch(`${API_BASE}/api/certificates/${certificateId}/mint`, {
+      method: 'PATCH',
+      headers: { ...authHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  getCertificates: async () => {
+    const authHeaders = getAuthHeaders();
+    const response = await fetch(`${API_BASE}/api/certificates/institution`, {
+      headers: authHeaders,
     });
     return handleResponse(response);
   },

@@ -34,17 +34,56 @@ export default function BlockchainStatus() {
     setError("");
     
     try {
-      // Fetch blockchain configuration
-      const configResponse = await fetch('/api/blockchain/config');
-      if (!configResponse.ok) throw new Error('Failed to fetch blockchain config');
+      // Use the deployed backend API URL from environment
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      
+      // Fetch blockchain configuration from your deployed backend
+      const configResponse = await fetch(`${API_BASE}/api/blockchain/config`);
+      if (!configResponse.ok) {
+        // If backend doesn't have blockchain config endpoint, use environment variables directly
+        const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || '';
+        const rpcUrl = import.meta.env.VITE_ETHEREUM_RPC_URL || '';
+        const contractABI = import.meta.env.VITE_CONTRACT_ABI || '[]';
+        
+        let hasABI = false;
+        try {
+          const parsedABI = JSON.parse(contractABI);
+          hasABI = Array.isArray(parsedABI) && parsedABI.length > 0;
+        } catch {
+          hasABI = false;
+        }
+        
+        setConfig({
+          contractAddress,
+          rpcUrl,
+          hasABI
+        });
+        
+        // Mock network info if we can't fetch it
+        setNetworkInfo({
+          chainId: 1, // Default to mainnet
+          name: 'Ethereum Mainnet'
+        });
+        return;
+      }
+      
       const configData = await configResponse.json();
       setConfig(configData);
 
-      // Fetch network information
-      const networkResponse = await fetch('/api/blockchain/network');
-      if (!networkResponse.ok) throw new Error('Failed to fetch network info');
-      const networkData = await networkResponse.json();
-      setNetworkInfo(networkData);
+      // Try to fetch network information from your backend
+      try {
+        const networkResponse = await fetch(`${API_BASE}/api/blockchain/network`);
+        if (networkResponse.ok) {
+          const networkData = await networkResponse.json();
+          setNetworkInfo(networkData);
+        }
+      } catch {
+        // If network endpoint doesn't exist, use default
+        setNetworkInfo({
+          chainId: 1,
+          name: 'Ethereum Mainnet'
+        });
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to fetch blockchain status');
     } finally {

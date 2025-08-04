@@ -24,7 +24,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/hooks/useWallet";
-import { Loader2, Upload, ExternalLink } from "lucide-react";
+import { Loader2, Upload, ExternalLink, AlertTriangle } from "lucide-react";
+import { api } from "@/lib/api";
 
 const createCertificateSchema = z.object({
   studentName: z.string().min(2, "Student name must be at least 2 characters"),
@@ -48,7 +49,8 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [ipfsHash, setIpfsHash] = useState<string>("");
   const { toast } = useToast();
-  const { mintCertificate, walletAddress, isConnected } = useWallet();
+  const { mintCertificate, walletAddress, isConnected, connect, isLoading: walletLoading } = useWallet();
+  const isLoading = walletLoading;
   const queryClient = useQueryClient();
 
   const form = useForm<CreateCertificateForm>({
@@ -70,22 +72,51 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
         throw new Error("Please connect your wallet first");
       }
 
-      // Generate a unique certificate ID
-      const certificateId = `cert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // First, create the certificate using your backend API
+      const formData = new FormData();
+      formData.append('studentName', data.studentName);
+      formData.append('studentEmail', data.studentEmail);
+      formData.append('studentAddress', data.studentAddress);
+      formData.append('courseName', data.courseName);
+      formData.append('grade', data.grade);
+      formData.append('completionDate', data.completionDate);
+      if (data.description) formData.append('description', data.description);
+      if (uploadedFile) formData.append('certificate', uploadedFile);
+
+      // Issue certificate through your backend (which handles IPFS and database)
+      const certificateResponse = await api.issueCertificate(formData);
       
-      // Use uploaded file hash or create a placeholder
-      const fileHash = ipfsHash || `ipfs_${certificateId}`;
+      // If backend supports on-chain minting, it might return transaction details
+      // Otherwise, we can mint it separately using the blockchain service
+      if (certificateResponse.tokenId && certificateResponse.transactionHash) {
+        return {
+          certificateId: certificateResponse.id,
+          txHash: certificateResponse.transactionHash,
+          tokenId: certificateResponse.tokenId
+        };
+      } else {
+        // Fallback: mint on blockchain using the certificate data
+        const certificateId = certificateResponse.id;
+        const fileHash = certificateResponse.ipfsHash || ipfsHash || `ipfs_${certificateId}`;
 
-      // Mint certificate on blockchain
-      const txHash = await mintCertificate(
-        certificateId,
-        data.studentAddress,
-        data.studentName,
-        data.courseName,
-        fileHash
-      );
+        const txHash = await mintCertificate(
+          certificateId,
+          data.studentAddress,
+          data.studentName,
+          data.courseName,
+          fileHash
+        );
 
-      return { certificateId, txHash };
+        // Update the certificate with blockchain info
+        if (txHash && walletAddress) {
+          await api.updateCertificateAfterMint(certificateId, {
+            tokenId: Date.now(), // In production, extract from transaction receipt
+            walletAddress: walletAddress
+          });
+        }
+
+        return { certificateId, txHash };
+      }
     },
     onSuccess: (data) => {
       toast({
@@ -156,6 +187,35 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
             Create and mint a new certificate on the blockchain. This will require a blockchain transaction.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Wallet Connection Check */}
+        {!isConnected && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2 text-yellow-800">
+              <AlertTriangle className="w-5 h-5" />
+              <span className="font-medium">Wallet Connection Required</span>
+            </div>
+            <p className="text-sm text-yellow-700 mt-1">
+              Please connect your wallet to issue certificates on the blockchain.
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={connect} 
+              className="mt-2"
+              disabled={isLoading}
+              data-testid="button-connect-wallet"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Connecting...
+                </>
+              ) : (
+                "Connect Wallet"
+              )}
+            </Button>
+          </div>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -356,19 +416,27 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                disabled={createCertificateMutation.isPending}
+                data-testid="button-cancel-certificate"
+              >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                disabled={createCertificateMutation.isPending || isUploading}
+                disabled={createCertificateMutation.isPending || isUploading || !isConnected}
                 data-testid="button-create-certificate"
               >
                 {createCertificateMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Minting...
+                    Creating Certificate...
                   </>
+                ) : !isConnected ? (
+                  "Connect Wallet First"
                 ) : (
                   "Create & Mint Certificate"
                 )}
