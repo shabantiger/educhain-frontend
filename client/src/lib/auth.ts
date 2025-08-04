@@ -49,7 +49,7 @@ export const auth = {
   }
 };
 
-export const getAuthHeaders = () => {
+export const getAuthHeaders = (): Record<string, string> => {
   const token = auth.getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };

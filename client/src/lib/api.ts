@@ -54,23 +54,26 @@ export const api = {
 
   // Institution endpoints
   getProfile: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/institutions/profile`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
 
   getVerificationStatus: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/institutions/verification-status`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
 
   uploadVerificationDocuments: async (formData: FormData) => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/institutions/verification-documents`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: authHeaders,
       body: formData,
     });
     return handleResponse(response);
@@ -78,27 +81,30 @@ export const api = {
 
   // Certificate endpoints
   getCertificates: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/certificates/institution`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
 
   issueCertificate: async (formData: FormData) => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/certificates/issue`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: authHeaders,
       body: formData,
     });
     return handleResponse(response);
   },
 
   updateCertificateAfterMint: async (certificateId: string, data: { tokenId: number; walletAddress: string }) => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/certificates/${certificateId}/onchain-mint`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeaders(),
+        ...authHeaders,
       },
       body: JSON.stringify(data),
     });
@@ -112,25 +118,28 @@ export const api = {
   },
 
   getCurrentSubscription: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/subscription/current`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
 
   getUsage: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/subscription/usage`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
 
   subscribe: async (data: { planId: string; paymentMethod: string }) => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/subscription/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeaders(),
+        ...authHeaders,
       },
       body: JSON.stringify(data),
     });
@@ -138,24 +147,27 @@ export const api = {
   },
 
   cancelSubscription: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/subscription/cancel`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
 
   getPayments: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/subscription/payments`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
 
   // Dashboard stats
   getStats: async () => {
+    const authHeaders = getAuthHeaders();
     const response = await fetch(`${API_BASE}/api/stats`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     return handleResponse(response);
   },
