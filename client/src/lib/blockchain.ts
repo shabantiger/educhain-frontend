@@ -19,14 +19,16 @@ const provider = new ethers.JsonRpcProvider(ETHEREUM_RPC_URL);
 
 // Contract interface
 export interface CertificateData {
-  id: string;
-  studentAddress: string;
-  institutionAddress: string;
   studentName: string;
+  institutionName: string;
   courseName: string;
+  grade: string;
   issueDate: number;
   ipfsHash: string;
   isValid: boolean;
+  issuedBy: string;
+  completionDate: number;
+  certificateType: string;
 }
 
 export class BlockchainService {
@@ -91,105 +93,183 @@ export class BlockchainService {
     }
   }
 
-  // Mint a new certificate on-chain
-  async mintCertificate(
-    certificateId: string,
+  // Issue a new certificate on-chain (for institutions)
+  async issueCertificate(
     studentAddress: string,
     studentName: string,
     courseName: string,
-    ipfsHash: string
-  ): Promise<string> {
+    grade: string,
+    ipfsHash: string,
+    completionDate: number,
+    certificateType: string
+  ): Promise<number> {
     if (!this.signer) {
       throw new Error('Wallet not connected');
     }
 
     try {
-      const tx = await this.contract.mintCertificate(
-        certificateId,
+      const tx = await this.contract.issueCertificate(
         studentAddress,
         studentName,
         courseName,
-        ipfsHash
+        grade,
+        ipfsHash,
+        completionDate,
+        certificateType
       );
 
       const receipt = await tx.wait();
-      return receipt.hash;
+      
+      // Get the token ID from the event
+      const event = receipt.logs.find((log: any) => {
+        try {
+          const decoded = this.contract.interface.parseLog(log);
+          return decoded?.name === 'CertificateIssued';
+        } catch {
+          return false;
+        }
+      });
+      
+      if (event) {
+        const decodedEvent = this.contract.interface.parseLog(event);
+        if (decodedEvent && decodedEvent.args) {
+          return Number(decodedEvent.args.tokenId);
+        }
+      }
+      
+      throw new Error('Certificate issued but token ID not found');
     } catch (error: any) {
-      throw new Error(`Failed to mint certificate: ${error.message}`);
+      throw new Error(`Failed to issue certificate: ${error.message}`);
     }
   }
 
-  // Verify a certificate exists on-chain
-  async verifyCertificate(certificateId: string): Promise<CertificateData | null> {
+  // Verify a certificate exists on-chain by token ID
+  async verifyCertificate(tokenId: number): Promise<CertificateData | null> {
     try {
-      const certificateData = await this.contract.getCertificate(certificateId);
+      const certificateData = await this.contract.verifyCertificate(tokenId);
       
-      // Check if certificate exists (assuming the contract returns default values for non-existent certificates)
-      if (!certificateData || certificateData.studentAddress === ethers.ZeroAddress) {
+      // Check if certificate exists
+      if (!certificateData || !certificateData.isValid) {
         return null;
       }
 
       return {
-        id: certificateId,
-        studentAddress: certificateData.studentAddress,
-        institutionAddress: certificateData.institutionAddress,
         studentName: certificateData.studentName,
+        institutionName: certificateData.institutionName,
         courseName: certificateData.courseName,
+        grade: certificateData.grade,
         issueDate: Number(certificateData.issueDate),
         ipfsHash: certificateData.ipfsHash,
-        isValid: certificateData.isValid
+        isValid: certificateData.isValid,
+        issuedBy: certificateData.issuedBy,
+        completionDate: Number(certificateData.completionDate),
+        certificateType: certificateData.certificateType
       };
     } catch (error: any) {
       throw new Error(`Failed to verify certificate: ${error.message}`);
     }
   }
 
+  // Verify a certificate by IPFS hash
+  async verifyCertificateByIPFS(ipfsHash: string): Promise<{ exists: boolean; tokenId: number; certificate: CertificateData | null }> {
+    try {
+      const result = await this.contract.verifyCertificateByIPFS(ipfsHash);
+      
+      if (!result.exists) {
+        return { exists: false, tokenId: 0, certificate: null };
+      }
+
+      const certificate = {
+        studentName: result.cert.studentName,
+        institutionName: result.cert.institutionName,
+        courseName: result.cert.courseName,
+        grade: result.cert.grade,
+        issueDate: Number(result.cert.issueDate),
+        ipfsHash: result.cert.ipfsHash,
+        isValid: result.cert.isValid,
+        issuedBy: result.cert.issuedBy,
+        completionDate: Number(result.cert.completionDate),
+        certificateType: result.cert.certificateType
+      };
+
+      return { 
+        exists: true, 
+        tokenId: Number(result.tokenId), 
+        certificate 
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to verify certificate by IPFS: ${error.message}`);
+    }
+  }
+
   // Get all certificates for a student address
-  async getCertificatesByStudent(studentAddress: string): Promise<CertificateData[]> {
+  async getCertificatesByStudent(studentAddress: string): Promise<number[]> {
     try {
-      const certificateIds = await this.contract.getCertificatesByStudent(studentAddress);
-      const certificates: CertificateData[] = [];
-
-      for (const id of certificateIds) {
-        const cert = await this.verifyCertificate(id);
-        if (cert) {
-          certificates.push(cert);
-        }
-      }
-
-      return certificates;
+      const certificateIds = await this.contract.getStudentCertificates(studentAddress);
+      return certificateIds.map((id: any) => Number(id));
     } catch (error: any) {
-      throw new Error(`Failed to get certificates: ${error.message}`);
+      throw new Error(`Failed to get student certificates: ${error.message}`);
     }
   }
 
-  // Get all certificates issued by an institution
-  async getCertificatesByInstitution(institutionAddress: string): Promise<CertificateData[]> {
+  // Get institution statistics
+  async getInstitutionStats(institutionAddress: string): Promise<{
+    name: string;
+    isAuthorized: boolean;
+    registrationDate: number;
+    certificatesIssued: number;
+  }> {
     try {
-      const certificateIds = await this.contract.getCertificatesByInstitution(institutionAddress);
-      const certificates: CertificateData[] = [];
-
-      for (const id of certificateIds) {
-        const cert = await this.verifyCertificate(id);
-        if (cert) {
-          certificates.push(cert);
-        }
-      }
-
-      return certificates;
+      const stats = await this.contract.getInstitutionStats(institutionAddress);
+      return {
+        name: stats[0],
+        isAuthorized: stats[1],
+        registrationDate: Number(stats[2]),
+        certificatesIssued: Number(stats[3])
+      };
     } catch (error: any) {
-      throw new Error(`Failed to get institution certificates: ${error.message}`);
+      throw new Error(`Failed to get institution stats: ${error.message}`);
     }
   }
 
-  // Revoke a certificate (set as invalid)
-  async revokeCertificate(certificateId: string): Promise<string> {
+  // Register an institution
+  async registerInstitution(name: string, email: string): Promise<string> {
     if (!this.signer) {
       throw new Error('Wallet not connected');
     }
 
     try {
-      const tx = await this.contract.revokeCertificate(certificateId);
+      const tx = await this.contract.registerInstitution(name, email);
+      const receipt = await tx.wait();
+      return receipt.hash;
+    } catch (error: any) {
+      throw new Error(`Failed to register institution: ${error.message}`);
+    }
+  }
+
+  // Update institution information
+  async updateInstitutionInfo(newName: string, newEmail: string): Promise<string> {
+    if (!this.signer) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      const tx = await this.contract.updateInstitutionInfo(newName, newEmail);
+      const receipt = await tx.wait();
+      return receipt.hash;
+    } catch (error: any) {
+      throw new Error(`Failed to update institution info: ${error.message}`);
+    }
+  }
+
+  // Revoke a certificate (set as invalid)
+  async revokeCertificate(tokenId: number): Promise<string> {
+    if (!this.signer) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      const tx = await this.contract.revokeCertificate(tokenId);
       const receipt = await tx.wait();
       return receipt.hash;
     } catch (error: any) {
@@ -197,9 +277,78 @@ export class BlockchainService {
     }
   }
 
+  // Batch issue certificates
+  async batchIssueCertificates(
+    students: string[],
+    studentNames: string[],
+    courseNames: string[],
+    grades: string[],
+    ipfsHashes: string[],
+    completionDates: number[],
+    certificateTypes: string[]
+  ): Promise<number[]> {
+    if (!this.signer) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      const tx = await this.contract.batchIssueCertificates(
+        students,
+        studentNames,
+        courseNames,
+        grades,
+        ipfsHashes,
+        completionDates,
+        certificateTypes
+      );
+
+      const receipt = await tx.wait();
+      
+      // Get the token IDs from the events
+      const events = receipt.logs.filter((log: any) => {
+        try {
+          const decoded = this.contract.interface.parseLog(log);
+          return decoded?.name === 'CertificateIssued';
+        } catch {
+          return false;
+        }
+      });
+      
+      return events.map((event: any) => {
+        const decodedEvent = this.contract.interface.parseLog(event);
+        if (decodedEvent && decodedEvent.args) {
+          return Number(decodedEvent.args.tokenId);
+        }
+        return 0;
+      }).filter(id => id > 0);
+    } catch (error: any) {
+      throw new Error(`Failed to batch issue certificates: ${error.message}`);
+    }
+  }
+
   // Get the contract address
   getContractAddress(): string {
     return CONTRACT_ADDRESS;
+  }
+
+  // Get total number of certificates
+  async getTotalCertificates(): Promise<number> {
+    try {
+      const total = await this.contract.getTotalCertificates();
+      return Number(total);
+    } catch (error: any) {
+      throw new Error(`Failed to get total certificates: ${error.message}`);
+    }
+  }
+
+  // Check if IPFS hash exists
+  async checkIPFSHashExists(ipfsHash: string): Promise<boolean> {
+    try {
+      const exists = await this.contract.ipfsHashExists(ipfsHash);
+      return exists;
+    } catch (error: any) {
+      throw new Error(`Failed to check IPFS hash: ${error.message}`);
+    }
   }
 
   // Get network information

@@ -9,15 +9,22 @@ interface TokenPayload {
   exp: number;
 }
 
+// Custom event for authentication state changes
+const AUTH_STATE_CHANGE_EVENT = 'authStateChange';
+
 export const auth = {
   getToken: () => localStorage.getItem('auth_token'),
   
   setToken: (token: string) => {
     localStorage.setItem('auth_token', token);
+    // Dispatch custom event to notify components of auth state change
+    window.dispatchEvent(new CustomEvent(AUTH_STATE_CHANGE_EVENT, { detail: { isAuthenticated: true } }));
   },
   
   removeToken: () => {
     localStorage.removeItem('auth_token');
+    // Dispatch custom event to notify components of auth state change
+    window.dispatchEvent(new CustomEvent(AUTH_STATE_CHANGE_EVENT, { detail: { isAuthenticated: false } }));
   },
   
   isAuthenticated: () => {
