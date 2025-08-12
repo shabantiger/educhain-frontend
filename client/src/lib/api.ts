@@ -200,6 +200,27 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Mint certificate to blockchain (student action)
+  mintCertificateToBlockchain: async (certificateId: string, data: { tokenId: number; walletAddress: string; transactionHash: string }) => {
+    const response = await fetch(`${API_BASE}/api/certificates/${certificateId}/mint`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  // Verification endpoints
+  verifyCertificateByIPFS: async (ipfsHash: string) => {
+    const response = await fetch(`${API_BASE}/api/certificates/verify/ipfs/${ipfsHash}`);
+    return handleResponse(response);
+  },
+
+  verifyCertificateByToken: async (tokenId: number) => {
+    const response = await fetch(`${API_BASE}/api/certificates/verify/token/${tokenId}`);
+    return handleResponse(response);
+  },
+
   // Student endpoints
   connectWallet: async (walletAddress: string) => {
     const response = await fetch(`${API_BASE}/api/students/connect-wallet`, {
@@ -212,21 +233,41 @@ export const api = {
 
   getCertificatesByWallet: async (walletAddress: string) => {
     const response = await fetch(`${API_BASE}/api/certificates/wallet/${walletAddress}`);
-    return handleResponse(response);
+    const data = await handleResponse(response);
+    
+    // Normalize response shape for student certificates
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray((data as any)?.certificates)
+      ? (data as any).certificates
+      : Array.isArray((data as any)?.data)
+      ? (data as any).data
+      : [];
+
+    const certificates = list.map((c: any) => ({
+      id: c.id ?? c._id ?? c.uuid ?? String(c.tokenId ?? c._id ?? Math.random()),
+      studentAddress: c.studentAddress,
+      studentName: c.studentName,
+      courseName: c.courseName,
+      grade: c.grade,
+      ipfsHash: c.ipfsHash,
+      completionDate: c.completionDate,
+      certificateType: c.certificateType ?? 'Academic',
+      issuedBy: c.issuedBy?._id ?? c.issuedBy ?? '',
+      institutionName: c.institutionName,
+      issuedAt: c.issuedAt ?? c.createdAt ?? c.issueDate,
+      isValid: c.isValid ?? true,
+      isMinted: c.isMinted ?? Boolean(c.tokenId),
+      tokenId: c.tokenId,
+      mintedTo: c.mintedTo,
+      mintedAt: c.mintedAt,
+    }));
+
+    return { certificates } as any;
   },
 
   verifyCertificate: async (id: string) => {
     const response = await fetch(`${API_BASE}/api/certificates/verify/${id}`);
-    return handleResponse(response);
-  },
-
-  // Mint certificate to blockchain (student action)
-  mintCertificateToBlockchain: async (certificateId: string, data: { tokenId: number; walletAddress: string; transactionHash: string }) => {
-    const response = await fetch(`${API_BASE}/api/certificates/${certificateId}/mint`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
     return handleResponse(response);
   },
 };

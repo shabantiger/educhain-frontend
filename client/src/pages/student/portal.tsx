@@ -42,11 +42,14 @@ export default function StudentPortal() {
   const queryClient = useQueryClient();
 
   // Query for student's issued certificates (from backend)
-  const { data: issuedCertificates = [], isLoading: loadingIssued } = useQuery({
+  const { data: issuedCertificatesData, isLoading: loadingIssued } = useQuery({
     queryKey: ["student-certificates", walletAddress],
     queryFn: () => api.getCertificatesByWallet(walletAddress!),
     enabled: isConnected && !!walletAddress,
+    refetchOnMount: true,
   });
+
+  const issuedCertificates = issuedCertificatesData?.certificates || [];
 
   // Mint certificate mutation
   const mintCertificateMutation = useMutation({

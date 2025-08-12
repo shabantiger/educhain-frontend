@@ -22,6 +22,7 @@ import { useState } from "react";
 import CreateCertificateModal from "@/components/CreateCertificateModal";
 import BlockchainStatus from "@/components/BlockchainStatus";
 import { useLocation } from "wouter";
+import { format } from "date-fns";
 
 export default function InstitutionDashboard() {
   const { user } = useAuth();
@@ -41,6 +42,50 @@ export default function InstitutionDashboard() {
     enabled: !!user,
     refetchOnMount: true,
   });
+
+  // Get recent certificates for activity feed
+  const { data: certificatesData } = useQuery({
+    queryKey: ["/api/certificates/institution"],
+    queryFn: api.getCertificates,
+    enabled: !!user,
+    refetchOnMount: true,
+  });
+
+  const certificates = certificatesData?.certificates || [];
+  
+  // Generate recent activities from actual certificates
+  const recentActivities = certificates.slice(0, 3).map((cert: any) => ({
+    type: "certificate",
+    message: `Certificate issued to ${cert.studentName}`,
+    details: `${cert.courseName} - ${format(new Date(cert.issuedAt), "MMM dd, yyyy")}`,
+    icon: CheckCircle,
+    color: "text-green-600",
+    bg: "bg-green-100",
+  }));
+
+  // Add static activities if not enough certificates
+  if (recentActivities.length < 3) {
+    const staticActivities = [
+      {
+        type: "student",
+        message: "New student registered",
+        details: "Sarah Johnson - 5 hours ago",
+        icon: UserPlus,
+        color: "text-blue-600",
+        bg: "bg-blue-100",
+      },
+      {
+        type: "blockchain",
+        message: "Blockchain transaction confirmed",
+        details: "Certificate hash: 0x4a5b...c9d2 - 1 day ago",
+        icon: Activity,
+        color: "text-purple-600",
+        bg: "bg-purple-100",
+      },
+    ];
+    
+    recentActivities.push(...staticActivities.slice(0, 3 - recentActivities.length));
+  }
 
   const quickActions = [
     {
@@ -74,33 +119,6 @@ export default function InstitutionDashboard() {
       color: "text-yellow-600",
       bg: "bg-yellow-100",
       action: () => setLocation("/subscription"),
-    },
-  ];
-
-  const recentActivities = [
-    {
-      type: "certificate",
-      message: "Certificate issued to John Smith",
-      details: "Computer Science Degree - 2 hours ago",
-      icon: CheckCircle,
-      color: "text-green-600",
-      bg: "bg-green-100",
-    },
-    {
-      type: "student",
-      message: "New student registered",
-      details: "Sarah Johnson - 5 hours ago",
-      icon: UserPlus,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
-    },
-    {
-      type: "blockchain",
-      message: "Blockchain transaction confirmed",
-      details: "Certificate hash: 0x4a5b...c9d2 - 1 day ago",
-      icon: Activity,
-      color: "text-purple-600",
-      bg: "bg-purple-100",
     },
   ];
 

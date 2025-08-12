@@ -48,10 +48,11 @@ export default function Certificates() {
     if (!certificate.isValid) {
       return <Badge variant="destructive">Revoked</Badge>;
     }
-    if (!certificate.isMinted) {
-      return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+    // Show Active for issued certificates, Pending only if not yet issued
+    if (certificate.issuedAt && certificate.ipfsHash) {
+      return <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>;
     }
-    return <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>;
+    return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
   };
 
   return (
