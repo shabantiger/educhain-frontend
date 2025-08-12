@@ -30,12 +30,16 @@ export default function InstitutionDashboard() {
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/stats"],
+    queryFn: api.getStats,
     enabled: !!user,
+    refetchOnMount: true,
   });
 
   const { data: subscription } = useQuery({
     queryKey: ["/api/subscription/current"],
+    queryFn: api.getCurrentSubscription,
     enabled: !!user,
+    refetchOnMount: true,
   });
 
   const quickActions = [
@@ -261,7 +265,7 @@ export default function InstitutionDashboard() {
       {/* Create Certificate Modal */}
       <CreateCertificateModal
         open={isCertificateModalOpen}
-        onClose={() => setIsCertificateModalOpen(false)}
+        onOpenChange={setIsCertificateModalOpen}
       />
     </div>
   );

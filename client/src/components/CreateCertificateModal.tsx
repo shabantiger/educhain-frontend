@@ -41,13 +41,12 @@ type CreateCertificateForm = z.infer<typeof createCertificateSchema>;
 
 interface CreateCertificateModalProps {
   open: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function CreateCertificateModal({ open, onClose }: CreateCertificateModalProps) {
+export default function CreateCertificateModal({ open, onOpenChange }: CreateCertificateModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [ipfsHash, setIpfsHash] = useState<string>("");
   const { toast } = useToast();
   const { mintCertificate, walletAddress, isConnected, connect, isLoading: walletLoading } = useWallet();
   const isLoading = walletLoading;
@@ -77,7 +76,7 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
       formData.append('grade', data.grade);
       formData.append('completionDate', data.completionDate);
       if (data.description) formData.append('description', data.description);
-      if (uploadedFile) formData.append('certificate', uploadedFile);
+      if (uploadedFile) formData.append('certificateFile', uploadedFile);
 
       // Issue certificate through your backend (stores in database and IPFS)
       const certificateResponse = await api.issueCertificate(formData);
@@ -93,14 +92,14 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
         description: "Certificate has been created and stored. Student can now mint it to their wallet.",
       });
       
-      // Invalidate certificates query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+      // Invalidate queries to refresh lists and stats
+      queryClient.invalidateQueries({ queryKey: ["/api/certificates/institution"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       
       // Reset form and close modal
       form.reset();
       setUploadedFile(null);
-      setIpfsHash("");
-      onClose();
+      onOpenChange(false);
     },
     onError: (error: any) => {
       toast({
@@ -117,25 +116,17 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
 
     setIsUploading(true);
     try {
-      // In a real implementation, you would upload to IPFS here
-      // For now, we'll simulate the upload and generate a hash
+      // Store the file for later upload during certificate issuance
       setUploadedFile(file);
       
-      // Simulate IPFS upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate a mock IPFS hash (in production, use real IPFS service)
-      const mockHash = `QmX${Math.random().toString(36).substr(2, 44)}`;
-      setIpfsHash(mockHash);
-      
       toast({
-        title: "File uploaded successfully",
-        description: `Document uploaded to IPFS: ${mockHash.slice(0, 10)}...`,
+        title: "File selected",
+        description: `${file.name} ready for upload during certificate issuance`,
       });
     } catch (error: any) {
       toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload file to IPFS.",
+        title: "File selection failed",
+        description: error.message || "Failed to select file.",
         variant: "destructive",
       });
     } finally {
@@ -148,7 +139,7 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Issue New Certificate</DialogTitle>
@@ -314,20 +305,9 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
                       <div className="text-green-600 font-medium">
                         ✓ {uploadedFile.name}
                       </div>
-                      {ipfsHash && (
-                        <div className="text-sm text-gray-600">
-                          IPFS Hash: {ipfsHash}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="ml-2"
-                            onClick={() => window.open(`https://ipfs.io/ipfs/${ipfsHash}`, '_blank')}
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      )}
+                      <div className="text-sm text-gray-600">
+                        File size: {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -360,7 +340,7 @@ export default function CreateCertificateModal({ open, onClose }: CreateCertific
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={onClose}
+                onClick={() => onOpenChange(false)}
                 disabled={createCertificateMutation.isPending}
                 data-testid="button-cancel-certificate"
               >

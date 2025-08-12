@@ -22,7 +22,9 @@ export default function Certificates() {
 
   const { data: certificatesData, isLoading } = useQuery({
     queryKey: ["/api/certificates/institution"],
+    queryFn: api.getCertificates,
     enabled: !!user,
+    refetchOnMount: true,
   });
 
   const certificates = certificatesData?.certificates || [];
@@ -194,7 +196,7 @@ export default function Certificates() {
                 </div>
 
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => window.open(`https://ipfs.io/ipfs/${certificate.ipfsHash}`, '_blank')}>
                     <Eye className="w-4 h-4 mr-1" />
                     View
                   </Button>

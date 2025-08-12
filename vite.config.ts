@@ -4,6 +4,11 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_API_BASE': JSON.stringify('https://educhain-backend-avmj.onrender.com'),
+    'import.meta.env.VITE_CONTRACT_ADDRESS': JSON.stringify('0xBD4228241dc6BC14C027bF8B6A24f97bc9872068'),
+    'import.meta.env.VITE_ETHEREUM_RPC_URL': JSON.stringify('https://mainnet.infura.io/v3/0565f1ad3548464e982c14f60420c183'),
+  },
   plugins: [
     react(),
     runtimeErrorOverlay(),

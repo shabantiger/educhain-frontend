@@ -1,38 +1,10 @@
 import { ethers } from 'ethers';
-
-// Get environment variables (in production, these would be passed from server)
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || '0xBD4228241dc6BC14C027bF8B6A24f97bc9872068';
-const CONTRACT_ABI_STRING = import.meta.env.VITE_CONTRACT_ABI as string;
-if (!CONTRACT_ADDRESS || !CONTRACT_ABI_STRING) {
-  throw new Error("Missing VITE_CONTRACT_ADDRESS or VITE_CONTRACT_ABI");
-}
-const ETHEREUM_RPC_URL = import.meta.env.VITE_ETHEREUM_RPC_URL || 'https://mainet.infura.io/v3/0565f1ad3548464e982c14f60420c183';
-
-// Parse ABI from environment variable
-let parsedABI: any[];
-try {
-  parsedABI = JSON.parse(CONTRACT_ABI_STRING || '[]');
-} catch (error) {
-  console.error('Failed to parse CONTRACT_ABI_STRING:', error);
-  parsedABI = [];
-}
+import { CONTRACT_CONFIG, type CertificateData, type InstitutionStats } from './contract';
 
 // Initialize provider
-const provider = new ethers.JsonRpcProvider(ETHEREUM_RPC_URL);
+const provider = new ethers.JsonRpcProvider(CONTRACT_CONFIG.rpcUrl);
 
-// Contract interface
-export interface CertificateData {
-  studentName: string;
-  institutionName: string;
-  courseName: string;
-  grade: string;
-  issueDate: number;
-  ipfsHash: string;
-  isValid: boolean;
-  issuedBy: string;
-  completionDate: number;
-  certificateType: string;
-}
+
 
 export class BlockchainService {
   private contract: ethers.Contract;
@@ -40,7 +12,7 @@ export class BlockchainService {
 
   constructor() {
     // Initialize with minimal contract setup - actual calls will be made through connected signer
-    this.contract = new ethers.Contract(CONTRACT_ADDRESS, parsedABI, provider);
+    this.contract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, provider);
   }
 
   // Connect wallet and get signer
@@ -331,7 +303,7 @@ export class BlockchainService {
 
   // Get the contract address
   getContractAddress(): string {
-    return CONTRACT_ADDRESS;
+    return CONTRACT_CONFIG.address;
   }
 
   // Get total number of certificates

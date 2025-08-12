@@ -1,7 +1,5 @@
-const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
-if (!API_BASE) {
-  console.warn("VITE_API_BASE is not set; API calls will fail");
-}
+const API_BASE = (import.meta.env.VITE_API_BASE ?? "https://educhain-backend-avmj.onrender.com").replace(/\/$/, "");
+console.log("Using API base:", API_BASE);
 import { auth, getAuthHeaders } from './auth';
 
 
@@ -109,7 +107,36 @@ export const api = {
     const response = await fetch(`${API_BASE}/api/certificates/institution`, {
       headers: authHeaders,
     });
-    return handleResponse(response);
+    const data = await handleResponse(response);
+    // Normalize response shape
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray((data as any)?.certificates)
+      ? (data as any).certificates
+      : Array.isArray((data as any)?.data)
+      ? (data as any).data
+      : [];
+
+    const certificates = list.map((c: any) => ({
+      id: c.id ?? c._id ?? c.uuid ?? String(c.tokenId ?? c._id ?? Math.random()),
+      studentAddress: c.studentAddress,
+      studentName: c.studentName,
+      courseName: c.courseName,
+      grade: c.grade,
+      ipfsHash: c.ipfsHash,
+      completionDate: c.completionDate,
+      certificateType: c.certificateType ?? 'Academic',
+      issuedBy: c.issuedBy?._id ?? c.issuedBy ?? '',
+      institutionName: c.institutionName,
+      issuedAt: c.issuedAt ?? c.createdAt ?? c.issueDate,
+      isValid: c.isValid ?? true,
+      isMinted: c.isMinted ?? Boolean(c.tokenId),
+      tokenId: c.tokenId,
+      mintedTo: c.mintedTo,
+      mintedAt: c.mintedAt,
+    }));
+
+    return { certificates } as any;
   },
 
   // Subscription endpoints
