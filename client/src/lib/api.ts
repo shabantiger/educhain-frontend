@@ -1,6 +1,10 @@
+const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
+if (!API_BASE) {
+  console.warn("VITE_API_BASE is not set; API calls will fail");
+}
 import { auth, getAuthHeaders } from './auth';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

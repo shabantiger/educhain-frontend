@@ -1,16 +1,19 @@
 import { ethers } from 'ethers';
 
 // Get environment variables (in production, these would be passed from server)
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000';
-const CONTRACT_ABI = import.meta.env.VITE_CONTRACT_ABI || '[]';
-const ETHEREUM_RPC_URL = import.meta.env.VITE_ETHEREUM_RPC_URL || 'https://ethereum-mainnet.s.alchemy.com/v2/demo';
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || '0xBD4228241dc6BC14C027bF8B6A24f97bc9872068';
+const CONTRACT_ABI_STRING = import.meta.env.VITE_CONTRACT_ABI as string;
+if (!CONTRACT_ADDRESS || !CONTRACT_ABI_STRING) {
+  throw new Error("Missing VITE_CONTRACT_ADDRESS or VITE_CONTRACT_ABI");
+}
+const ETHEREUM_RPC_URL = import.meta.env.VITE_ETHEREUM_RPC_URL || 'https://mainet.infura.io/v3/0565f1ad3548464e982c14f60420c183';
 
 // Parse ABI from environment variable
 let parsedABI: any[];
 try {
-  parsedABI = JSON.parse(CONTRACT_ABI || '[]');
+  parsedABI = JSON.parse(CONTRACT_ABI_STRING || '[]');
 } catch (error) {
-  console.error('Failed to parse CONTRACT_ABI:', error);
+  console.error('Failed to parse CONTRACT_ABI_STRING:', error);
   parsedABI = [];
 }
 
@@ -320,7 +323,7 @@ export class BlockchainService {
           return Number(decodedEvent.args.tokenId);
         }
         return 0;
-      }).filter(id => id > 0);
+      }).filter((id: number) => id > 0);
     } catch (error: any) {
       throw new Error(`Failed to batch issue certificates: ${error.message}`);
     }
