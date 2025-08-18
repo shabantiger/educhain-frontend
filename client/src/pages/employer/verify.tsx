@@ -10,7 +10,7 @@ import { Search, FileText, Hash, CheckCircle, XCircle, AlertTriangle, ExternalLi
 import { api } from "@/lib/api";
 import { format } from "date-fns";
 
-export default function Verification() {
+export default function Verify() {
   const [searchMethod, setSearchMethod] = useState<"ipfs" | "token">("ipfs");
   const [searchValue, setSearchValue] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -26,7 +26,7 @@ export default function Verification() {
         return await api.verifyCertificateByToken(parseInt(searchValue));
       }
     },
-    enabled: false, // Don't auto-fetch, only on button click
+    enabled: false, // Don't auto-fetch, only on button clicks
   });
 
   const handleSearch = async () => {
@@ -56,7 +56,7 @@ export default function Verification() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-center items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900" data-testid="page-title">
             Certificate Verification

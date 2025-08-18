@@ -1,3 +1,4 @@
+import VerificationSection from '../components/VerificationSection';
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,6 +48,12 @@ export default function Landing() {
                   Student Portal
                 </Button>
               </Link>
+              <Link href="/verify">
+                <Button variant="secondary" data-testid="verify-btn">
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Verify Here
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -54,135 +61,74 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-neutral-900 mb-6">
-            Secure Educational
-            <span className="gradient-bg bg-clip-text text-transparent"> Certificates</span>
-            <br />
-            on the Blockchain
-          </h1>
-          
-          <p className="text-xl text-neutral-600 mb-8 max-w-3xl mx-auto">
-            Issue, verify, and manage educational certificates with blockchain technology. 
-            Ensure authenticity, prevent fraud, and provide instant verification for students and employers.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register">
-              <Button size="lg" className="min-w-[200px]" data-testid="cta-register">
-                Start Issuing Certificates
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/student">
-              <Button size="lg" variant="outline" className="min-w-[200px]" data-testid="cta-verify">
-                <Wallet className="mr-2 h-5 w-5" />
-                Verify My Certificates
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-              Why Choose EduChain?
-            </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              Our blockchain-based solution provides unparalleled security, transparency, and trust for educational credentials.
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+          {/* Left: Text Content */}
+          <div className="w-full md:w-2/3 text-center md:text-left md:pr-12">
+            <h1 className="text-4xl md:text-6xl font-bold text-neutral-900 mb-6">
+              Secure Educational
+              <span className="gradient-bg bg-clip-text text-transparent"> Certificates</span>
+              <br />
+              on the Blockchain
+            </h1>
+            
+            <p className="text-xl text-neutral-600 mb-8 max-w-3xl mx-auto md:mx-0">
+              Issue, verify, and manage educational certificates with blockchain technology. 
+              Ensure authenticity, prevent fraud, and provide instant verification for students and employers.
             </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <Link href="/register">
+                <Button size="lg" className="min-w-[200px]" data-testid="cta-register">
+                  Start Issuing Certificates
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/verify">
+                <Button size="lg" variant="outline" className="min-w-[200px]" data-testid="cta-verify">
+                  <Wallet className="mr-2 h-5 w-5" />
+                  Verify My Certificates
+                </Button>
+              </Link>
+            </div>
           </div>
+          {/* Right: Logo Section */}
+        
+            <div className="w-full md:w-3/10 flex justify-left md:justify mt-12 md:mt- -9 "
+            style={{ position: "absolute", top: "2in", right: "-1.2in" }}>
+              <img
+                src="/images/logo.png"
+                alt="EduChain Logo"
+                className="h-auto w-auto md:h-40 lg:h-48 object-contain mb-4"
+                style={{ maxWidth: "100%" }}
+              />
+            
+            </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle>Tamper-Proof Security</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-600">
-                  Blockchain technology ensures certificates cannot be forged, altered, or duplicated, providing ultimate security.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                  <Zap className="h-6 w-6 text-secondary" />
-                </div>
-                <CardTitle>Instant Verification</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-600">
-                  Verify certificates instantly with a simple scan or click. No waiting, no paperwork, no delays.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
-                  <Award className="h-6 w-6 text-accent" />
-                </div>
-                <CardTitle>Global Recognition</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-600">
-                  Certificates are recognized worldwide, accessible anywhere, and accepted by employers and institutions globally.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6 text-yellow-600" />
-                </div>
-                <CardTitle>Easy Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-600">
-                  Intuitive dashboard for institutions to issue, track, and manage certificates with comprehensive analytics.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <FileText className="h-6 w-6 text-green-600" />
-                </div>
-                <CardTitle>Digital Portfolio</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-600">
-                  Students can access all their certificates in one secure digital wallet, shareable with employers instantly.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <Lock className="h-6 w-6 text-purple-600" />
-                </div>
-                <CardTitle>Privacy Protected</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-600">
-                  Advanced encryption and privacy controls ensure sensitive information is protected while maintaining transparency.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
+
+     <VerificationSection />
+ {/* Image Section */}
+ <div className="flex justify-left mb-8" style={{ marginLeft: '2in',  }}>
+   <img 
+     src="/public/images/picture1.png" 
+     alt="Student holding an EduChain certificate" 
+     className="w-[400px] h-[720px] object-cover rounded-lg shadow-lg"
+     style={{ marginTop: '0.5in', marginBottom: '0.5in', marginRight: '24px' }}
+   />
+   <img 
+     src="/public/images/picture3.png" 
+     alt="Student holding an EduChain certificate" 
+     className="w-[1024px] h-[720px] object-cover rounded-lg shadow-lg"
+     style={{ marginTop: '0.5in', marginBottom: '0.5in', marginRight: '24px' }}
+   />
+   <img 
+     src="/public/images/picture2.png" 
+     alt="A certificate in wallet" 
+     className="w-[400px] h-[720px] object-cover rounded-lg shadow-lg"
+     style={{ marginTop: '0.5in', marginBottom: '0.5in' }}
+   />
+ </div>
 
       {/* How It Works Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -275,7 +221,7 @@ export default function Landing() {
               <h4 className="font-semibold text-neutral-900 mb-4">Product</h4>
               <ul className="space-y-2 text-neutral-600">
                 <li><Link href="/features">Features</Link></li>
-                <li><Link href="/pricing">Pricing</Link></li>
+                <li><Link href="/subscription">Pricing</Link></li>
                 <li><Link href="/security">Security</Link></li>
               </ul>
             </div>
@@ -283,7 +229,7 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Support</h4>
               <ul className="space-y-2 text-neutral-600">
-                <li><Link href="/docs">Documentation</Link></li>
+                <li><Link href="/documentation">Documentation</Link></li>
                 <li><Link href="/help">Help Center</Link></li>
                 <li><Link href="/contact">Contact</Link></li>
               </ul>
@@ -292,7 +238,7 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Company</h4>
               <ul className="space-y-2 text-neutral-600">
-                <li><Link href="/about">About</Link></li>
+                <li><Link href="/roadmap">Roadmap</Link></li>
                 <li><Link href="/blog">Blog</Link></li>
                 <li><Link href="/careers">Careers</Link></li>
               </ul>
@@ -300,7 +246,7 @@ export default function Landing() {
           </div>
           
           <div className="border-t border-neutral-200 mt-8 pt-8 text-center text-neutral-600">
-            <p>&copy; 2024 EduChain. All rights reserved.</p>
+            <p>&copy; 2025 EduChain. All rights reserved.</p>
           </div>
         </div>
       </footer>

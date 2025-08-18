@@ -95,8 +95,11 @@ export default function StudentPortalModal({ open, onOpenChange }: StudentPortal
                 <div className="mt-4 text-sm text-neutral-500">
                   <p>Supported wallets: MetaMask, WalletConnect, Coinbase Wallet</p>
                 </div>
+                <p> dreams shuttered by fraud?</p>
               </div>
+             
             </div>
+              
           ) : (
             /* Connected Dashboard */
             <div className="space-y-6">

@@ -83,7 +83,7 @@ export default function Register() {
                       <FormLabel>Institution Name</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="University of Excellence"
+                          placeholder="EduChain university"
                           {...field}
                           data-testid="input-name"
                         />
@@ -121,7 +121,7 @@ export default function Register() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="admin@university.edu"
+                        placeholder="admin@educhain.edu"
                         {...field}
                         data-testid="input-email"
                       />
@@ -198,7 +198,7 @@ export default function Register() {
                         <FormLabel>Website</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://university.edu"
+                            placeholder="https://educhain.edu"
                             {...field}
                             data-testid="input-website"
                           />

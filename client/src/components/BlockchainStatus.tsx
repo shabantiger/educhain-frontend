@@ -35,7 +35,7 @@ export default function BlockchainStatus() {
     
     try {
       // Use the deployed backend API URL from environment
-      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
       
       // Fetch blockchain configuration from your deployed backend
       const configResponse = await fetch(`${API_BASE}/api/blockchain/config`);

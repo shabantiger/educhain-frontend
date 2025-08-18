@@ -16,6 +16,7 @@ import StudentPortal from "@/pages/student/portal";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import NotFound from "@/pages/not-found";
+import verify from "@/pages/employer/verify";
 
 function Router() {
   return (
@@ -24,6 +25,8 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/student" component={StudentPortal} />
+      <Route path="/verify" component= {verify} /> 
+  
       
       {/* Admin Routes */}
       <Route path="/admin/login" component={AdminLogin} />

@@ -76,7 +76,7 @@ export default function Login() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="institution@example.com"
+                        placeholder="educhain@example.com"
                         {...field}
                         data-testid="input-email"
                       />

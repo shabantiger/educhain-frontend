@@ -1,0 +1,99 @@
+ {/* Features Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
+              Why Choose EduChain?
+            </h2>
+            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+              Our blockchain-based solution provides unparalleled security, transparency, and trust for educational credentials.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Tamper-Proof Security</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-600">
+                  Blockchain technology ensures certificates cannot be forged, altered, or duplicated, providing ultimate security.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
+                  <Zap className="h-6 w-6 text-secondary" />
+                </div>
+                <CardTitle>Instant Verification</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-600">
+                  Verify certificates instantly with a simple scan or click. No waiting, no paperwork, no delays.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
+                  <Award className="h-6 w-6 text-accent" />
+                </div>
+                <CardTitle>Global Recognition</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-600">
+                  Certificates are recognized worldwide, accessible anywhere, and accepted by employers and institutions globally.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="h-6 w-6 text-yellow-600" />
+                </div>
+                <CardTitle>Easy Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-600">
+                  Intuitive dashboard for institutions to issue, track, and manage certificates with comprehensive analytics.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                  <FileText className="h-6 w-6 text-green-600" />
+                </div>
+                <CardTitle>Digital Portfolio</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-600">
+                  Students can access all their certificates in one secure digital wallet, shareable with employers instantly.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                  <Lock className="h-6 w-6 text-purple-600" />
+                </div>
+                <CardTitle>Privacy Protected</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-600">
+                  Advanced encryption and privacy controls ensure sensitive information is protected while maintaining transparency.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>

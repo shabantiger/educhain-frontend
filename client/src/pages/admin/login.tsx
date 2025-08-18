@@ -19,7 +19,7 @@ const adminLoginSchema = z.object({
 type AdminLoginForm = z.infer<typeof adminLoginSchema>;
 
 const ADMIN_EMAIL = 'admin@educhain.com';
-const ADMIN_PASSWORD = 'admin123'; // In production, use secure auth!
+const ADMIN_PASSWORD = 'Twgagjmd123!'; // In production, use secure auth!
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();

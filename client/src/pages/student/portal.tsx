@@ -64,7 +64,10 @@ export default function StudentPortal() {
         walletAddress,
         certificate.studentName,
         certificate.courseName,
-        certificate.ipfsHash || `ipfs_${certificate.id}`
+        certificate.ipfsHash || `ipfs_${certificate.id}`,
+        certificate.grade,
+        certificate.certificateType,
+        certificate.completionDate ? Math.floor(new Date(certificate.completionDate).getTime() / 1000) : undefined
       );
 
       // Update certificate status in backend
@@ -186,6 +189,51 @@ export default function StudentPortal() {
                 </div>
               </AlertDescription>
             </Alert>
+
+            {/* Dreams Shattered by Fraud Section */}
+            <Card className="bg-gradient-to-r from-gray-800 to-gray-900 text-white overflow-hidden">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between">
+                  {/* Left side with image/icon */}
+                  <div className="flex-shrink-0 mr-8">
+                    <div className="w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center">
+                      <AlertCircle className="w-12 h-12 text-gray-400" />
+                    </div>
+                  </div>
+                  
+                  {/* Center content */}
+                  <div className="flex-1">
+                    <h2 className="text-3xl font-bold text-blue-300 mb-6">
+                      Dreams Shattered by Fraud
+                    </h2>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-4 h-4 bg-red-500 rounded"></div>
+                        <span className="text-white font-medium">Rampant Certificate Forgery</span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <div className="w-4 h-4 bg-red-500 rounded"></div>
+                        <span className="text-white font-medium">Slow, Manual Verification</span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <div className="w-4 h-4 bg-red-500 rounded"></div>
+                        <span className="text-white font-medium">Lost Documents & Opportunities</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right side call to action */}
+                  <div className="flex-shrink-0 ml-8 text-center">
+                    <div className="text-2xl font-bold text-white-400 leading-tight">
+                      This is your time to take full ownership of your certificate!
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Student Certificates */}
             <div>

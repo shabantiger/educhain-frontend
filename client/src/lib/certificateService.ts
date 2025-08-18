@@ -61,39 +61,40 @@ export class CertificateService {
         status: 'pending'
       };
 
-      // 3. If student wallet address is provided, mint on blockchain
-      if (request.studentWalletAddress) {
-        try {
-          // Connect wallet if not already connected
-          await blockchainService.connectWallet();
-          
-          // Convert completion date to timestamp
-          const completionTimestamp = Math.floor(new Date(request.completionDate).getTime() / 1000);
-          
-          // Mint certificate on blockchain
-          const tokenId = await blockchainService.issueCertificate(
-            request.studentWalletAddress,
-            request.studentName,
-            request.courseName,
-            request.grade,
-            backendResponse.ipfsHash,
-            completionTimestamp,
-            request.certificateType
-          );
+      // 3. Always attempt to mint on blockchain (institution wallet)
+      try {
+        // Connect wallet if not already connected
+        await blockchainService.connectWallet();
+        
+        // Convert completion date to timestamp
+        const completionTimestamp = Math.floor(new Date(request.completionDate).getTime() / 1000);
+        
+        // Use student wallet address if provided, otherwise use a default address
+        const studentAddress = request.studentWalletAddress || '0x0000000000000000000000000000000000000000';
+        
+        // Mint certificate on blockchain
+        const tokenId = await blockchainService.issueCertificate(
+          studentAddress,
+          request.studentName,
+          request.courseName,
+          request.grade,
+          backendResponse.ipfsHash,
+          completionTimestamp,
+          request.certificateType
+        );
 
-          // Update backend with blockchain data
-          await api.updateCertificateAfterMint(backendResponse.certificateId, {
-            tokenId,
-            walletAddress: request.studentWalletAddress
-          });
+        // Update backend with blockchain data
+        await api.updateCertificateAfterMint(backendResponse.certificateId, {
+          tokenId,
+          walletAddress: studentAddress
+        });
 
-          response.tokenId = tokenId;
-          response.status = 'minted';
-        } catch (blockchainError) {
-          console.error('Blockchain minting failed:', blockchainError);
-          response.status = 'failed';
-          // Certificate is still valid in backend, just not on blockchain
-        }
+        response.tokenId = tokenId;
+        response.status = 'minted';
+      } catch (blockchainError) {
+        console.error('Blockchain minting failed:', blockchainError);
+        response.status = 'failed';
+        // Certificate is still valid in backend, just not on blockchain
       }
 
       return response;

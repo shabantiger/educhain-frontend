@@ -160,7 +160,10 @@ export function useWallet() {
     studentAddress: string,
     studentName: string,
     courseName: string,
-    ipfsHash: string
+    ipfsHash: string,
+    grade?: string,
+    certificateType?: string,
+    completionDate?: number
   ) => {
     try {
       // Check if MetaMask is available
@@ -181,7 +184,10 @@ export function useWallet() {
         studentAddress,
         studentName,
         courseName,
-        ipfsHash
+        ipfsHash,
+        grade,
+        certificateType,
+        completionDate
       );
       
       // Refetch certificates after minting
