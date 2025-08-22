@@ -21,13 +21,19 @@ export default function Verify() {
       if (!searchValue.trim()) return null;
       
       try {
+        console.log('Attempting verification with:', { searchMethod, searchValue });
+        
+        let result;
         if (searchMethod === "ipfs") {
-          return await api.verifyCertificateByIPFS(searchValue);
+          result = await api.verifyCertificateByIPFS(searchValue);
         } else if (searchMethod === "token") {
-          return await api.verifyCertificateByToken(parseInt(searchValue));
+          result = await api.verifyCertificateByToken(parseInt(searchValue));
         } else {
-          return await api.verifyCertificate(searchValue);
+          result = await api.verifyCertificate(searchValue);
         }
+        
+        console.log('Verification result:', result);
+        return result;
       } catch (error: any) {
         console.error('Verification error:', error);
         throw new Error(error.message || 'Failed to verify certificate');
@@ -49,12 +55,22 @@ export default function Verify() {
   const getVerificationStatus = (certificate: any) => {
     if (!certificate) return null;
     
-    if (!certificate.isValid) {
+    // Check if certificate exists and has data
+    if (!certificate.studentName && !certificate.courseName) {
+      return { status: "not_found", icon: XCircle, color: "text-red-600", bg: "bg-red-100", text: "Certificate Not Found" };
+    }
+    
+    // Check if certificate is revoked
+    if (certificate.isValid === false) {
       return { status: "revoked", icon: XCircle, color: "text-red-600", bg: "bg-red-100", text: "Certificate Revoked" };
     }
-    if (certificate.isMinted) {
+    
+    // Check if certificate is minted on blockchain
+    if (certificate.isMinted || certificate.tokenId) {
       return { status: "active", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100", text: "Certificate Verified" };
     }
+    
+    // Certificate exists but not minted
     return { status: "pending", icon: AlertTriangle, color: "text-yellow-600", bg: "bg-yellow-100", text: "Certificate Pending Mint" };
   };
 
@@ -222,6 +238,18 @@ export default function Verify() {
               </Badge>
             </div>
           </CardHeader>
+          
+          {/* Debug Information */}
+          <CardContent className="pb-0">
+            <details className="mb-4">
+              <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+                Debug Information (Click to expand)
+              </summary>
+              <div className="mt-2 p-3 bg-gray-50 rounded text-xs font-mono">
+                <pre>{JSON.stringify(certificateData, null, 2)}</pre>
+              </div>
+            </details>
+          </CardContent>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -242,13 +270,19 @@ export default function Verify() {
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Completion Date:</span>
                     <span className="font-medium">
-                      {format(new Date(certificateData.completionDate), "MMM dd, yyyy")}
+                      {certificateData.completionDate ? 
+                        format(new Date(certificateData.completionDate), "MMM dd, yyyy") : 
+                        'Not available'
+                      }
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Issue Date:</span>
                     <span className="font-medium">
-                      {format(new Date(certificateData.issuedAt), "MMM dd, yyyy")}
+                      {certificateData.issuedAt ? 
+                        format(new Date(certificateData.issuedAt), "MMM dd, yyyy") : 
+                        'Not available'
+                      }
                     </span>
                   </div>
                 </div>
@@ -259,18 +293,24 @@ export default function Verify() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Institution:</span>
-                    <span className="font-medium">{certificateData.institutionName}</span>
+                    <span className="font-medium">{certificateData.institutionName || 'Not available'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Student Address:</span>
                     <span className="font-medium font-mono text-sm">
-                      {certificateData.studentAddress.slice(0, 6)}...{certificateData.studentAddress.slice(-4)}
+                      {certificateData.studentAddress ? 
+                        `${certificateData.studentAddress.slice(0, 6)}...${certificateData.studentAddress.slice(-4)}` : 
+                        'Not available'
+                      }
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">IPFS Hash:</span>
                     <span className="font-medium font-mono text-sm">
-                      {certificateData.ipfsHash.slice(0, 10)}...
+                      {certificateData.ipfsHash ? 
+                        `${certificateData.ipfsHash.slice(0, 10)}...` : 
+                        'Not available'
+                      }
                     </span>
                   </div>
                   {certificateData.tokenId && (
@@ -281,20 +321,24 @@ export default function Verify() {
                   )}
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Certificate Type:</span>
-                    <span className="font-medium">{certificateData.certificateType}</span>
+                    <span className="font-medium">{certificateData.certificateType || 'Not available'}</span>
                   </div>
                 </div>
                 
-                <div className="pt-4">
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => window.open(`https://ipfs.io/ipfs/${certificateData.ipfsHash}`, '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Certificate Document
-                  </Button>
-                </div>
+                                 <div className="pt-4">
+                   <Button 
+                     variant="outline" 
+                     className="w-full"
+                     onClick={() => certificateData.ipfsHash ? 
+                       window.open(`https://ipfs.io/ipfs/${certificateData.ipfsHash}`, '_blank') : 
+                       alert('IPFS hash not available')
+                     }
+                     disabled={!certificateData.ipfsHash}
+                   >
+                     <ExternalLink className="w-4 h-4 mr-2" />
+                     View Certificate Document
+                   </Button>
+                 </div>
               </div>
             </div>
           </CardContent>

@@ -271,13 +271,16 @@ export default function StudentPortal() {
                               <p className="text-sm text-neutral-700">{certificate.institutionName}</p>
                               <p className="text-xs text-neutral-600">Grade: {certificate.grade}</p>
                               <p className="text-xs text-neutral-500">
-                                Issued: {format(new Date(certificate.issuedAt), "MMM dd, yyyy")}
+                                Issued: {certificate.issuedAt ? 
+                                  format(new Date(certificate.issuedAt), "MMM dd, yyyy") : 
+                                  'Not available'
+                                }
                               </p>
-                              {certificate.ipfsHash && (
-                                <p className="text-xs text-neutral-500 font-mono">
-                                  IPFS: {certificate.ipfsHash.slice(0, 10)}...
-                                </p>
-                              )}
+                                                              {certificate.ipfsHash && (
+                                  <p className="text-xs text-neutral-500 font-mono">
+                                    IPFS: {certificate.ipfsHash ? `${certificate.ipfsHash.slice(0, 10)}...` : 'Not available'}
+                                  </p>
+                                )}
                             </div>
                             <Badge variant="secondary" className={certificate.isMinted ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}>
                               {certificate.isMinted ? "Minted ✓" : "Ready to Mint"}
@@ -316,6 +319,14 @@ export default function StudentPortal() {
                                   Token ID: #{certificate.tokenId}
                                 </div>
                               )}
+                              {certificate.ipfsHash && (
+                                <div className="text-xs text-neutral-600 font-mono">
+                                  IPFS: {certificate.ipfsHash ? `${certificate.ipfsHash.slice(0, 10)}...` : 'Not available'}
+                                </div>
+                              )}
+                              <div className="text-xs text-neutral-600">
+                                Cert ID: {certificate.id}
+                              </div>
                             </div>
                           )}
                         </CardContent>
@@ -398,15 +409,41 @@ export default function StudentPortal() {
                         {/* Certificate Preview */}
                         <div className="certificate-preview mb-4">
                           <div className="text-2xl mb-2">🎓</div>
+                          
+                          {/* Verification Details */}
+                          <div className="bg-gray-50 p-3 rounded-lg mb-3">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Verification Details</h4>
+                            <div className="space-y-1 text-xs">
+                              {certificate.tokenId && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Token ID:</span>
+                                  <span className="font-mono text-blue-600">#{certificate.tokenId}</span>
+                                </div>
+                              )}
+                                                              {certificate.ipfsHash && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">IPFS Hash:</span>
+                                    <span className="font-mono text-green-600">{certificate.ipfsHash ? `${certificate.ipfsHash.slice(0, 10)}...` : 'Not available'}</span>
+                                  </div>
+                                )}
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Certificate ID:</span>
+                                <span className="font-mono text-purple-600">{certificate.id}</span>
+                              </div>
+                            </div>
+                          </div>
                           <h3 className="font-bold text-neutral-900 mb-1" data-testid={`certificate-course-${certificate.id}`}>
                             {certificate.courseName}
                           </h3>
                           <p className="text-sm text-neutral-600 mb-2" data-testid={`certificate-institution-${certificate.id}`}>
                             {certificate.institutionName}
                           </p>
-                          <p className="text-xs text-neutral-500">
-                            Issued: {format(new Date(certificate.issuedAt), "MMMM dd, yyyy")}
-                          </p>
+                                                      <p className="text-xs text-neutral-500">
+                              Issued: {certificate.issuedAt ? 
+                                format(new Date(certificate.issuedAt), "MMMM dd, yyyy") : 
+                                'Not available'
+                              }
+                            </p>
                         </div>
                         
                         <div className="space-y-2 mb-4">
@@ -508,7 +545,10 @@ export default function StudentPortal() {
                             <div><strong>Course:</strong> {verificationResult.certificate.courseName}</div>
                             <div><strong>Student:</strong> {verificationResult.certificate.studentName}</div>
                             <div><strong>Institution:</strong> {verificationResult.certificate.institutionName}</div>
-                            <div><strong>Issue Date:</strong> {format(new Date(verificationResult.certificate.issuedAt), "MMMM dd, yyyy")}</div>
+                            <div><strong>Issue Date:</strong> {verificationResult.certificate.issuedAt ? 
+                          format(new Date(verificationResult.certificate.issuedAt), "MMMM dd, yyyy") : 
+                          'Not available'
+                        }</div>
                           </div>
                         </div>
                       ) : (
