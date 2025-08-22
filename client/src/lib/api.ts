@@ -46,6 +46,14 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Test admin endpoint
+  testAdmin: async () => {
+    const response = await fetch(`${API_BASE}/api/admin/test`, {
+      headers: { 'admin-email': 'admin@educhain.com' },
+    });
+    return handleResponse(response);
+  },
+
   // Auth endpoints
   login: async (credentials: { email: string; password: string }) => {
     const response = await fetch(`${API_BASE}/api/institutions/login`, {

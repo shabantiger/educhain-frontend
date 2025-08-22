@@ -62,8 +62,20 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
-          {/* Left: Text Content */}
-          <div className="w-full md:w-2/3 text-center md:text-left md:pr-12">
+          {/* Left: Logo Section */}
+          <div className="w-full md:w-1/3 flex justify-center md:justify-start items-center mb-8 md:mb-0">
+            <div className="flex items-center justify-center md:justify-start">
+              <img
+                src="/images/logo.png"
+                alt="EduChain Logo"
+                className="h-24 sm:h-32 md:h-40 lg:h-48 object-contain drop-shadow-lg"
+                style={{ maxWidth: "100%" }}
+              />
+            </div>
+          </div>
+          
+          {/* Right: Text Content */}
+          <div className="w-full md:w-2/3 text-center md:text-left md:pl-12">
             <h1 className="text-4xl md:text-6xl font-bold text-neutral-900 mb-6">
               Secure Educational
               <span className="gradient-bg bg-clip-text text-transparent"> Certificates</span>
@@ -91,18 +103,6 @@ export default function Landing() {
               </Link>
             </div>
           </div>
-          {/* Right: Logo Section */}
-        
-            <div className="w-full md:w-3/10 flex justify-left md:justify mt-12 md:mt- -9 "
-            style={{ position: "absolute", top: "2in", right: "-1.2in" }}>
-              <img
-                src="/images/logo.png"
-                alt="EduChain Logo"
-                className="h-auto w-auto md:h-40 lg:h-48 object-contain mb-4"
-                style={{ maxWidth: "100%" }}
-              />
-            
-            </div>
           
         </div>
       </section>

@@ -446,7 +446,7 @@ export const CONTRACT_ABI = [
 export const CONTRACT_CONFIG = {
   address: import.meta.env.VITE_CONTRACT_ADDRESS || '0xBD4228241dc6BC14C027bF8B6A24f97bc9872068',
   abi: CONTRACT_ABI,
-  rpcUrl: import.meta.env.VITE_ETHEREUM_RPC_URL || 'https://sepolia.infura.io/v3/your-project-id'
+  rpcUrl: import.meta.env.VITE_BASE_MAINNET_RPC_URL || 'https://mainnet.base.org'
 };
 
 // Contract interface types

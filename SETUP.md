@@ -14,23 +14,25 @@ This guide will help you set up the frontend to communicate with your backend an
    # Backend Configuration
    VITE_API_BASE=https://educhain-backend-avmj.onrender.com
    
-   # Smart Contract Configuration
+   # Smart Contract Configuration (Base Mainnet)
    VITE_CONTRACT_ADDRESS=0xBD4228241dc6BC14C027bF8B6A24f97bc9872068
-   VITE_ETHEREUM_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID
-   VITE_NETWORK=sepolia
+   VITE_BASE_MAINNET_RPC_URL=https://mainnet.base.org
+   VITE_NETWORK=base-mainnet
    
-   # Optional: Contract ABI (if not using the default one)
-   # VITE_CONTRACT_ABI=[...]
+   # Optional: Use a different RPC provider for better performance
+   # VITE_BASE_MAINNET_RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY
+   # VITE_BASE_MAINNET_RPC_URL=https://base-mainnet.publicnode.com
    ```
 
-3. **Blockchain Configuration Troubleshooting:**
+3. **Blockchain Configuration (Base Mainnet):**
    
-   If you're experiencing blockchain connection errors, the frontend will gracefully fall back to API-only mode. To fix blockchain connectivity:
+   Your smart contract is deployed on Base mainnet. For optimal performance:
    
-   - **Get an Infura API Key**: Sign up at https://infura.io and create a project
-   - **Update RPC URL**: Replace `YOUR_INFURA_PROJECT_ID` with your actual project ID
-   - **Network Selection**: Use `sepolia` for testing or `mainnet` for production
-   - **MetaMask Setup**: Ensure MetaMask is configured for the same network
+   - **Free Option**: Use `https://mainnet.base.org` (already configured)
+   - **Better Performance**: Use Alchemy or Infura for Base mainnet
+   - **MetaMask Setup**: Configure MetaMask for Base mainnet (Chain ID: 8453)
+   - **Network RPC**: `https://mainnet.base.org`
+   - **Explorer**: `https://basescan.org`
 
 ## Recent Fixes (Latest Update)
 
@@ -46,6 +48,27 @@ This guide will help you set up the frontend to communicate with your backend an
 - **500 Errors**: Fixed institution blockchain status endpoint with proper error handling
 - **Connection Refused**: Added graceful fallback when blockchain RPC is unavailable
 - **Infinite Retries**: Limited React Query retries and added proper error boundaries
+
+## 🚀 **NEW: Base Mainnet Blockchain Integration**
+
+### **What's Now Working:**
+- ✅ **Automatic Certificate Minting**: Certificates are automatically minted on Base mainnet when issued
+- ✅ **Real Blockchain Transactions**: All certificate operations create actual blockchain transactions
+- ✅ **Dual Verification**: Certificates are verified on both database and blockchain
+- ✅ **Transaction Tracking**: All blockchain transactions are recorded and tracked
+- ✅ **Certificate Revocation**: Admins can revoke certificates on both database and blockchain
+
+### **Backend Integration:**
+- ✅ **Smart Contract Calls**: Backend now calls your Base mainnet contract
+- ✅ **Transaction Recording**: All blockchain transactions are stored in database
+- ✅ **Error Handling**: Graceful fallback if blockchain operations fail
+- ✅ **Admin Controls**: Certificate revocation and institution management
+
+### **Frontend Integration:**
+- ✅ **Base Mainnet Configuration**: Updated to use Base mainnet RPC and contract
+- ✅ **Transaction Display**: Shows blockchain transaction details
+- ✅ **Verification Status**: Displays both database and blockchain verification
+- ✅ **MetaMask Integration**: Works with Base mainnet MetaMask configuration
 
 ## Key Features Implemented
 

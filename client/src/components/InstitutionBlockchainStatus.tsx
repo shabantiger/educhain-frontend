@@ -15,15 +15,12 @@ import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
 interface InstitutionBlockchainData {
-  institution: {
-    name: string;
-    email: string;
-    walletAddress: string;
-    backendVerified: boolean;
-    blockchainRegistered: boolean;
-  };
-  blockchainStats: any;
-  isAuthorizedOnChain: boolean;
+  institutionId: string;
+  blockchainRegistered: boolean;
+  blockchainAuthorized: boolean;
+  blockchainError: string | null;
+  blockchainTxHash: string | null;
+  blockchainRegistrationDate: string | null;
   error?: string;
 }
 
@@ -65,19 +62,15 @@ export default function InstitutionBlockchainStatus() {
       return <Badge variant="destructive">Error</Badge>;
     }
     
-    if (blockchainData.isAuthorizedOnChain) {
+    if (blockchainData.blockchainAuthorized) {
       return <Badge variant="default" className="bg-green-100 text-green-800">Authorized</Badge>;
     }
     
-    if (blockchainData.institution.blockchainRegistered) {
+    if (blockchainData.blockchainRegistered) {
       return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Registered</Badge>;
     }
     
-    if (blockchainData.institution.backendVerified) {
-      return <Badge variant="outline">Pending Registration</Badge>;
-    }
-    
-    return <Badge variant="outline" className="text-gray-500">Not Verified</Badge>;
+    return <Badge variant="outline" className="text-gray-500">Not Registered</Badge>;
   };
 
   const getStatusIcon = () => {
@@ -87,16 +80,12 @@ export default function InstitutionBlockchainStatus() {
       return <XCircle className="h-5 w-5 text-red-500" />;
     }
     
-    if (blockchainData.isAuthorizedOnChain) {
+    if (blockchainData.blockchainAuthorized) {
       return <CheckCircle className="h-5 w-5 text-green-500" />;
     }
     
-    if (blockchainData.institution.blockchainRegistered) {
+    if (blockchainData.blockchainRegistered) {
       return <Shield className="h-5 w-5 text-yellow-500" />;
-    }
-    
-    if (blockchainData.institution.backendVerified) {
-      return <AlertTriangle className="h-5 w-5 text-orange-500" />;
     }
     
     return <Clock className="h-5 w-5 text-gray-400" />;
@@ -109,30 +98,26 @@ export default function InstitutionBlockchainStatus() {
       return "There was an error checking your blockchain status. Please contact support.";
     }
     
-    if (blockchainData.isAuthorizedOnChain) {
+    if (blockchainData.blockchainAuthorized) {
       return "Your institution is fully authorized on the blockchain and can issue certificates.";
     }
     
-    if (blockchainData.institution.blockchainRegistered) {
+    if (blockchainData.blockchainRegistered) {
       return "Your institution is registered on the blockchain but awaiting authorization from admin.";
     }
     
-    if (blockchainData.institution.backendVerified) {
-      return "Your institution is verified but not yet registered on the blockchain. This will be done automatically by admin.";
-    }
-    
-    return "Your institution needs to be verified before blockchain registration.";
+    return "Your institution is not yet registered on the blockchain. This will be done automatically by admin.";
   };
 
   if (loading) {
     return (
       <Card>
-              <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Network className="h-5 w-5" />
-          Blockchain Status
-        </CardTitle>
-      </CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Network className="h-5 w-5" />
+            Blockchain Status
+          </CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <Skeleton className="h-6 w-32" />
@@ -166,25 +151,39 @@ export default function InstitutionBlockchainStatus() {
             </div>
           </div>
 
-          {/* Institution Details */}
+          {/* Blockchain Status Details */}
           {blockchainData && (
             <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-              <h4 className="font-medium text-sm">Institution Details</h4>
+              <h4 className="font-medium text-sm">Blockchain Status Details</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Name:</span>
-                  <span className="ml-2">{blockchainData.institution.name}</span>
+                  <span className="text-muted-foreground">Registered:</span>
+                  <span className="ml-2">{blockchainData.blockchainRegistered ? 'Yes' : 'No'}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Email:</span>
-                  <span className="ml-2">{blockchainData.institution.email}</span>
+                  <span className="text-muted-foreground">Authorized:</span>
+                  <span className="ml-2">{blockchainData.blockchainAuthorized ? 'Yes' : 'No'}</span>
                 </div>
-                <div className="md:col-span-2">
-                  <span className="text-muted-foreground">Wallet Address:</span>
-                  <span className="ml-2 font-mono text-xs break-all">
-                    {blockchainData.institution.walletAddress}
-                  </span>
-                </div>
+                {blockchainData.blockchainTxHash && (
+                  <div className="md:col-span-2">
+                    <span className="text-muted-foreground">Transaction Hash:</span>
+                    <span className="ml-2 font-mono text-xs break-all">
+                      {blockchainData.blockchainTxHash}
+                    </span>
+                  </div>
+                )}
+                {blockchainData.blockchainRegistrationDate && (
+                  <div>
+                    <span className="text-muted-foreground">Registration Date:</span>
+                    <span className="ml-2">{new Date(blockchainData.blockchainRegistrationDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                {blockchainData.blockchainError && (
+                  <div className="md:col-span-2">
+                    <span className="text-muted-foreground">Error:</span>
+                    <span className="ml-2 text-red-600">{blockchainData.blockchainError}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -195,16 +194,8 @@ export default function InstitutionBlockchainStatus() {
               <h4 className="font-medium text-sm">Status Details</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Backend Verified:</span>
-                  {blockchainData.institution.backendVerified ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <XCircle className="h-4 w-4 text-red-500" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Blockchain Registered:</span>
-                  {blockchainData.institution.blockchainRegistered ? (
+                  {blockchainData.blockchainRegistered ? (
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   ) : (
                     <XCircle className="h-4 w-4 text-red-500" />
@@ -212,35 +203,11 @@ export default function InstitutionBlockchainStatus() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Blockchain Authorized:</span>
-                  {blockchainData.isAuthorizedOnChain ? (
+                  {blockchainData.blockchainAuthorized ? (
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   ) : (
                     <XCircle className="h-4 w-4 text-red-500" />
                   )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Blockchain Stats */}
-          {blockchainData?.blockchainStats && (
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm">Blockchain Statistics</h4>
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Registration Date:</span>
-                    <span className="ml-2">
-                      {blockchainData.blockchainStats.registrationDate > 0 
-                        ? new Date(blockchainData.blockchainStats.registrationDate * 1000).toLocaleDateString()
-                        : 'Not registered'
-                      }
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Certificates Issued:</span>
-                    <span className="ml-2">{blockchainData.blockchainStats.certificatesIssued || 0}</span>
-                  </div>
                 </div>
               </div>
             </div>
