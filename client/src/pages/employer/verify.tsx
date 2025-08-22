@@ -55,18 +55,22 @@ export default function Verify() {
   const getVerificationStatus = (certificate: any) => {
     if (!certificate) return null;
     
+    // Extract certificate data from the nested structure
+    const certData = certificate.certificate || certificate;
+    const blockchainData = certificate.blockchainVerification?.certificate;
+    
     // Check if certificate exists and has data
-    if (!certificate.studentName && !certificate.courseName) {
+    if (!certData.studentName && !certData.courseName) {
       return { status: "not_found", icon: XCircle, color: "text-red-600", bg: "bg-red-100", text: "Certificate Not Found" };
     }
     
     // Check if certificate is revoked
-    if (certificate.isValid === false) {
+    if (certData.isValid === false) {
       return { status: "revoked", icon: XCircle, color: "text-red-600", bg: "bg-red-100", text: "Certificate Revoked" };
     }
     
     // Check if certificate is minted on blockchain
-    if (certificate.isMinted || certificate.tokenId) {
+    if (certData.isMinted || certData.tokenId || blockchainData) {
       return { status: "active", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100", text: "Certificate Verified" };
     }
     
@@ -237,6 +241,11 @@ export default function Verify() {
                 {verificationStatus.text}
               </Badge>
             </div>
+            {verificationStatus.status === "active" && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ This certificate has been successfully verified and is valid on the blockchain.
+              </p>
+            )}
           </CardHeader>
           
           {/* Debug Information */}
@@ -257,21 +266,21 @@ export default function Verify() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Student Name:</span>
-                    <span className="font-medium">{certificateData.studentName}</span>
+                    <span className="font-medium">{certificateData.certificate?.studentName || 'Not available'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Course:</span>
-                    <span className="font-medium">{certificateData.courseName}</span>
+                    <span className="font-medium">{certificateData.certificate?.courseName || 'Not available'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Grade:</span>
-                    <span className="font-medium">{certificateData.grade}</span>
+                    <span className="font-medium">{certificateData.certificate?.grade || 'Not available'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Completion Date:</span>
                     <span className="font-medium">
-                      {certificateData.completionDate ? 
-                        format(new Date(certificateData.completionDate), "MMM dd, yyyy") : 
+                      {certificateData.certificate?.completionDate ? 
+                        format(new Date(certificateData.certificate.completionDate), "MMM dd, yyyy") : 
                         'Not available'
                       }
                     </span>
@@ -279,8 +288,8 @@ export default function Verify() {
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Issue Date:</span>
                     <span className="font-medium">
-                      {certificateData.issuedAt ? 
-                        format(new Date(certificateData.issuedAt), "MMM dd, yyyy") : 
+                      {certificateData.certificate?.issuedAt ? 
+                        format(new Date(certificateData.certificate.issuedAt), "MMM dd, yyyy") : 
                         'Not available'
                       }
                     </span>
@@ -293,13 +302,13 @@ export default function Verify() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Institution:</span>
-                    <span className="font-medium">{certificateData.institutionName || 'Not available'}</span>
+                    <span className="font-medium">{certificateData.certificate?.institutionName || 'Not available'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Student Address:</span>
                     <span className="font-medium font-mono text-sm">
-                      {certificateData.studentAddress ? 
-                        `${certificateData.studentAddress.slice(0, 6)}...${certificateData.studentAddress.slice(-4)}` : 
+                      {certificateData.certificate?.studentAddress ? 
+                        `${certificateData.certificate.studentAddress.slice(0, 6)}...${certificateData.certificate.studentAddress.slice(-4)}` : 
                         'Not available'
                       }
                     </span>
@@ -307,38 +316,70 @@ export default function Verify() {
                   <div className="flex justify-between">
                     <span className="text-neutral-500">IPFS Hash:</span>
                     <span className="font-medium font-mono text-sm">
-                      {certificateData.ipfsHash ? 
-                        `${certificateData.ipfsHash.slice(0, 10)}...` : 
+                      {certificateData.certificate?.ipfsHash ? 
+                        `${certificateData.certificate.ipfsHash.slice(0, 10)}...` : 
                         'Not available'
                       }
                     </span>
                   </div>
-                  {certificateData.tokenId && (
+                  {certificateData.certificate?.tokenId && (
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Token ID:</span>
-                      <span className="font-medium">#{certificateData.tokenId}</span>
+                      <span className="font-medium">#{certificateData.certificate.tokenId}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Certificate Type:</span>
-                    <span className="font-medium">{certificateData.certificateType || 'Not available'}</span>
+                    <span className="font-medium">{certificateData.certificate?.certificateType || 'Not available'}</span>
                   </div>
+                  
+                  {/* Blockchain Verification Info */}
+                  {certificateData.blockchainVerification && (
+                    <>
+                      <div className="border-t pt-3 mt-3">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Blockchain Verification</h4>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Blockchain Status:</span>
+                            <Badge variant="outline" className="text-green-600 border-green-300">
+                              ✓ Verified on Blockchain
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Contract Address:</span>
+                            <span className="font-mono text-xs">
+                              {certificateData.contractAddress ? 
+                                `${certificateData.contractAddress.slice(0, 6)}...${certificateData.contractAddress.slice(-4)}` : 
+                                'Not available'
+                              }
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Verification Method:</span>
+                            <span className="text-xs capitalize">
+                              {certificateData.verificationMethod?.replace(/_/g, ' ') || 'Not available'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
-                                 <div className="pt-4">
-                   <Button 
-                     variant="outline" 
-                     className="w-full"
-                     onClick={() => certificateData.ipfsHash ? 
-                       window.open(`https://ipfs.io/ipfs/${certificateData.ipfsHash}`, '_blank') : 
-                       alert('IPFS hash not available')
-                     }
-                     disabled={!certificateData.ipfsHash}
-                   >
-                     <ExternalLink className="w-4 h-4 mr-2" />
-                     View Certificate Document
-                   </Button>
-                 </div>
+                <div className="pt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => certificateData.certificate?.ipfsHash ? 
+                      window.open(`https://ipfs.io/ipfs/${certificateData.certificate.ipfsHash}`, '_blank') : 
+                      alert('IPFS hash not available')
+                    }
+                    disabled={!certificateData.certificate?.ipfsHash}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Certificate Document
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
