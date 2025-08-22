@@ -47,3 +47,43 @@ Preferred communication style: Simple, everyday language.
 - **Development Tools**: ESBuild for production bundling, TypeScript for type safety
 
 The architecture follows a clear separation of concerns with shared type definitions between frontend and backend, enabling type-safe development across the full stack. The platform is designed for scalability with cloud-native database solutions and modular component architecture.
+
+## Admin Blockchain Management
+
+### Overview
+The admin dashboard includes comprehensive blockchain management capabilities for registering and authorizing educational institutions on the blockchain. This ensures that only verified institutions can issue certificates on-chain.
+
+### Features
+
+#### 1. Blockchain Registration
+- **Individual Registration**: Register verified institutions one by one on the blockchain
+- **Bulk Registration**: Register all verified institutions at once for efficiency
+- **Transaction Tracking**: View transaction hashes and blockchain explorer links
+- **Error Handling**: Comprehensive error reporting for failed registrations
+
+#### 2. Blockchain Authorization
+- **Two-Step Process**: Registration followed by authorization
+- **Permission Management**: Grant institutions permission to issue certificates
+- **Status Tracking**: Monitor authorization status across all institutions
+
+#### 3. Status Monitoring
+- **Real-time Status**: View blockchain registration and authorization status
+- **Summary Dashboard**: Overview of total, verified, registered, and authorized institutions
+- **Detailed Reports**: Individual institution blockchain status with transaction details
+
+### Admin Access
+- **Login**: admin@educhain.com / admin123
+- **Security**: Admin-only endpoints with email verification
+- **Dashboard**: Comprehensive blockchain management interface
+
+### Blockchain Network
+- **Network**: Sepolia Testnet (Ethereum testnet)
+- **Smart Contract**: EduChain certificate management contract
+- **Explorer**: Etherscan integration for transaction verification
+
+### API Endpoints
+- `GET /api/admin/blockchain-summary` - Get blockchain registration summary
+- `GET /api/admin/blockchain-status` - Get all institutions' blockchain status
+- `POST /api/admin/institutions/:id/blockchain-register` - Register institution
+- `POST /api/admin/institutions/:id/blockchain-authorize` - Authorize institution
+- `POST /api/admin/blockchain-register-all` - Bulk register all verified institutions

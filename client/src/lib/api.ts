@@ -18,9 +18,14 @@ async function handleResponse(response: Response) {
     
     try {
       const errorData = JSON.parse(text);
-      errorMessage = errorData.error || errorData.message || errorMessage;
+      errorMessage = errorData.error || errorData.message || errorData.details || errorMessage;
     } catch {
-      errorMessage = text || errorMessage;
+      // If response is HTML (like error page), extract meaningful error
+      if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+        errorMessage = `Server error (${response.status}): ${response.statusText}`;
+      } else {
+        errorMessage = text || errorMessage;
+      }
     }
     
     throw new ApiError(response.status, errorMessage);
@@ -35,6 +40,12 @@ async function handleResponse(response: Response) {
 }
 
 export const api = {
+  // Health check
+  healthCheck: async () => {
+    const response = await fetch(`${API_BASE}/api/health`);
+    return handleResponse(response);
+  },
+
   // Auth endpoints
   login: async (credentials: { email: string; password: string }) => {
     const response = await fetch(`${API_BASE}/api/institutions/login`, {
@@ -268,6 +279,63 @@ export const api = {
 
   verifyCertificate: async (id: string) => {
     const response = await fetch(`${API_BASE}/api/certificates/verify/${id}`);
+    return handleResponse(response);
+  },
+
+  // Blockchain integration endpoints
+  getBlockchainStatus: async (institutionId: string) => {
+    const authHeaders = getAuthHeaders();
+    const response = await fetch(`${API_BASE}/api/institutions/${institutionId}/blockchain-status`, {
+      headers: authHeaders,
+    });
+    return handleResponse(response);
+  },
+
+  // Admin blockchain endpoints
+  getBlockchainSummary: async () => {
+    const response = await fetch(`${API_BASE}/api/admin/blockchain-summary`, {
+      headers: { 'admin-email': 'admin@educhain.com' },
+    });
+    return handleResponse(response);
+  },
+
+  getBlockchainStatusAll: async () => {
+    const response = await fetch(`${API_BASE}/api/admin/blockchain-status`, {
+      headers: { 'admin-email': 'admin@educhain.com' },
+    });
+    return handleResponse(response);
+  },
+
+  registerInstitutionOnBlockchain: async (institutionId: string) => {
+    const response = await fetch(`${API_BASE}/api/admin/institutions/${institutionId}/blockchain-register`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'admin-email': 'admin@educhain.com' 
+      },
+    });
+    return handleResponse(response);
+  },
+
+  authorizeInstitutionOnBlockchain: async (institutionId: string) => {
+    const response = await fetch(`${API_BASE}/api/admin/institutions/${institutionId}/blockchain-authorize`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'admin-email': 'admin@educhain.com' 
+      },
+    });
+    return handleResponse(response);
+  },
+
+  bulkRegisterInstitutionsOnBlockchain: async () => {
+    const response = await fetch(`${API_BASE}/api/admin/blockchain-register-all`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'admin-email': 'admin@educhain.com' 
+      },
+    });
     return handleResponse(response);
   },
 };

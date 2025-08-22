@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import CreateCertificateModal from "@/components/CreateCertificateModal";
 import BlockchainStatus from "@/components/BlockchainStatus";
+import InstitutionBlockchainStatus from "@/components/InstitutionBlockchainStatus";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 
@@ -279,6 +280,9 @@ export default function InstitutionDashboard() {
         {/* Blockchain Status */}
         <BlockchainStatus />
       </div>
+
+      {/* Institution Blockchain Status */}
+      <InstitutionBlockchainStatus />
 
       {/* Create Certificate Modal */}
       <CreateCertificateModal

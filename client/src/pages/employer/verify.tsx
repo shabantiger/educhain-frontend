@@ -11,7 +11,7 @@ import { api } from "@/lib/api";
 import { format } from "date-fns";
 
 export default function Verify() {
-  const [searchMethod, setSearchMethod] = useState<"ipfs" | "token">("ipfs");
+  const [searchMethod, setSearchMethod] = useState<"ipfs" | "token" | "id">("ipfs");
   const [searchValue, setSearchValue] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
@@ -20,10 +20,17 @@ export default function Verify() {
     queryFn: async () => {
       if (!searchValue.trim()) return null;
       
-      if (searchMethod === "ipfs") {
-        return await api.verifyCertificateByIPFS(searchValue);
-      } else {
-        return await api.verifyCertificateByToken(parseInt(searchValue));
+      try {
+        if (searchMethod === "ipfs") {
+          return await api.verifyCertificateByIPFS(searchValue);
+        } else if (searchMethod === "token") {
+          return await api.verifyCertificateByToken(parseInt(searchValue));
+        } else {
+          return await api.verifyCertificate(searchValue);
+        }
+      } catch (error: any) {
+        console.error('Verification error:', error);
+        throw new Error(error.message || 'Failed to verify certificate');
       }
     },
     enabled: false, // Don't auto-fetch, only on button clicks
@@ -71,8 +78,22 @@ export default function Verify() {
           <CardTitle>Verify Certificate</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={searchMethod} onValueChange={(value) => setSearchMethod(value as "ipfs" | "token")}>
-            <TabsList className="grid w-full grid-cols-2">
+          <div className="mb-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">How to verify certificates:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• <strong>IPFS Hash:</strong> Use the IPFS hash from the certificate (starts with "Qm")</li>
+                <li>• <strong>Token ID:</strong> Use the blockchain token ID (numeric)</li>
+                <li>• <strong>Certificate ID:</strong> Use the unique certificate identifier</li>
+              </ul>
+              <p className="text-xs text-blue-700 mt-2">
+                Example IPFS Hash: QmZyAGfoTeib5JGv9bBZ6HYisgUPEAMskAF2z7PU7C7Yii
+              </p>
+            </div>
+          </div>
+          
+          <Tabs value={searchMethod} onValueChange={(value) => setSearchMethod(value as "ipfs" | "token" | "id")}>
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="ipfs" className="flex items-center gap-2">
                 <Hash className="w-4 h-4" />
                 IPFS Hash
@@ -80,6 +101,10 @@ export default function Verify() {
               <TabsTrigger value="token" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Token ID
+              </TabsTrigger>
+              <TabsTrigger value="id" className="flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                Certificate ID
               </TabsTrigger>
             </TabsList>
             
@@ -125,6 +150,27 @@ export default function Verify() {
                 </div>
               </div>
             </TabsContent>
+            
+            <TabsContent value="id" className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Certificate ID</label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="68a81ed08860581b9f838d51"
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleSearch} disabled={isSearching || !searchValue.trim()}>
+                    {isSearching ? (
+                      <Skeleton className="w-4 h-4" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -149,9 +195,17 @@ export default function Verify() {
             <div className="text-center">
               <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-neutral-900 mb-2">Certificate Not Found</h3>
-              <p className="text-neutral-500">
-                No certificate found with the provided {searchMethod === "ipfs" ? "IPFS hash" : "token ID"}.
+              <p className="text-neutral-500 mb-2">
+                No certificate found with the provided {searchMethod === "ipfs" ? "IPFS hash" : searchMethod === "token" ? "token ID" : "certificate ID"}.
               </p>
+              <p className="text-sm text-neutral-400">
+                Please check the {searchMethod === "ipfs" ? "IPFS hash" : searchMethod === "token" ? "token ID" : "certificate ID"} and try again.
+              </p>
+              {searchMethod === "ipfs" && (
+                <p className="text-xs text-neutral-400 mt-2">
+                  Example: QmZyAGfoTeib5JGv9bBZ6HYisgUPEAMskAF2z7PU7C7Yii
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

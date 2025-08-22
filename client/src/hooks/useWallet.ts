@@ -23,16 +23,28 @@ export function useWallet() {
     queryFn: async () => {
       try {
         // Try blockchain service first
-        return await blockchainService.getCertificatesByStudent(walletAddress);
-      } catch (error) {
+        const blockchainCertificates = await blockchainService.getCertificatesByStudent(walletAddress);
+        if (blockchainCertificates && blockchainCertificates.length > 0) {
+          return blockchainCertificates;
+        }
+        
         // Fallback to API endpoint
-        const response = await fetch(`/api/blockchain/certificates/student/${walletAddress}`);
-        if (!response.ok) throw new Error('Failed to fetch certificates');
+        const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
+        const response = await fetch(`${API_BASE}/api/certificates/student/${walletAddress}`);
+        if (!response.ok) {
+          console.warn('API fallback also failed, returning empty array');
+          return [];
+        }
         const data = await response.json();
         return data.certificates || [];
+      } catch (error) {
+        console.warn('Failed to fetch certificates from both blockchain and API:', error);
+        return [];
       }
     },
     enabled: isConnected && !!walletAddress,
+    retry: 1, // Limit retries to prevent infinite loops
+    retryDelay: 1000,
   });
 
   // Check if wallet is already connected

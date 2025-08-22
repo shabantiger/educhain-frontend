@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,7 @@ export default function FileUpload({
 }: FileUploadProps) {
   const [selectedFiles, setSelectedFiles] = useState<FileWithMetadata[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const validateFile = (file: File): string | null => {
@@ -128,7 +129,9 @@ export default function FileUpload({
   }, [handleFiles]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File input change event triggered', e.target.files);
     if (e.target.files && e.target.files.length > 0) {
+      console.log('Files selected:', e.target.files.length);
       handleFiles(e.target.files);
       // Reset input value to allow uploading the same file again
       e.target.value = '';
@@ -183,6 +186,7 @@ export default function FileUpload({
         </p>
         
         <input
+          ref={fileInputRef}
           type="file"
           multiple
           accept={acceptedFileTypes}
@@ -191,16 +195,23 @@ export default function FileUpload({
           id="file-upload-input"
           data-testid="file-upload-input"
         />
-        <Label htmlFor="file-upload-input" className="cursor-pointer">
-          <Button 
-            type="button" 
-            variant="outline"
-            disabled={isUploading || selectedFiles.length >= maxFiles}
-            data-testid="button-choose-files"
-          >
-            Choose Files
-          </Button>
-        </Label>
+        <Button 
+          type="button" 
+          variant="outline"
+          disabled={isUploading || selectedFiles.length >= maxFiles}
+          data-testid="button-choose-files"
+          className="relative z-10"
+          onClick={() => {
+            console.log('Choose Files button clicked');
+            if (fileInputRef.current) {
+              fileInputRef.current.click();
+            } else {
+              console.error('File input ref not found');
+            }
+          }}
+        >
+          Choose Files
+        </Button>
         
         <p className="text-sm text-neutral-500 mt-2">
           Accepted formats: {acceptedFileTypes} (max {(maxFileSize / 1024 / 1024).toFixed(1)}MB each)

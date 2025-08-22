@@ -12,15 +12,40 @@ This guide will help you set up the frontend to communicate with your backend an
 2. **Update the environment variables in `.env`:**
    ```env
    # Backend Configuration
-   VITE_API_URL=https://educhain-backend-avmj.onrender.com
+   VITE_API_BASE=https://educhain-backend-avmj.onrender.com
    
    # Smart Contract Configuration
    VITE_CONTRACT_ADDRESS=0xBD4228241dc6BC14C027bF8B6A24f97bc9872068
-   VITE_ETHEREUM_RPC_URL=https://ethereum-mainnet.s.alchemy.com/v2/demo
+   VITE_ETHEREUM_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID
+   VITE_NETWORK=sepolia
    
-   # Contract ABI (already included in env.example)
-   VITE_CONTRACT_ABI=[...]
+   # Optional: Contract ABI (if not using the default one)
+   # VITE_CONTRACT_ABI=[...]
    ```
+
+3. **Blockchain Configuration Troubleshooting:**
+   
+   If you're experiencing blockchain connection errors, the frontend will gracefully fall back to API-only mode. To fix blockchain connectivity:
+   
+   - **Get an Infura API Key**: Sign up at https://infura.io and create a project
+   - **Update RPC URL**: Replace `YOUR_INFURA_PROJECT_ID` with your actual project ID
+   - **Network Selection**: Use `sepolia` for testing or `mainnet` for production
+   - **MetaMask Setup**: Ensure MetaMask is configured for the same network
+
+## Recent Fixes (Latest Update)
+
+### Dashboard Login Errors Fixed
+- ✅ **Added missing backend endpoints**: `/api/blockchain/config`, `/api/blockchain/network`, `/api/institutions/:id/blockchain-status`
+- ✅ **Fixed infinite retry loops**: Limited blockchain connection retries and added graceful fallbacks
+- ✅ **Improved error handling**: Frontend now gracefully handles blockchain connection failures
+- ✅ **Enhanced API fallbacks**: When blockchain is unavailable, frontend falls back to backend API calls
+- ✅ **Better environment configuration**: Updated environment variable names and added proper defaults
+
+### Error Resolution Summary
+- **404 Errors**: Added missing blockchain configuration endpoints to backend
+- **500 Errors**: Fixed institution blockchain status endpoint with proper error handling
+- **Connection Refused**: Added graceful fallback when blockchain RPC is unavailable
+- **Infinite Retries**: Limited React Query retries and added proper error boundaries
 
 ## Key Features Implemented
 
@@ -45,6 +70,53 @@ This guide will help you set up the frontend to communicate with your backend an
 - **Institution registration** on blockchain
 - **Profile management** and updates
 - **Statistics tracking** from both backend and blockchain
+
+## Admin Blockchain Management Setup
+
+### Admin Access
+1. **Login Credentials:**
+   - Email: `admin@educhain.com`
+   - Password: `admin123`
+
+2. **Access Admin Dashboard:**
+   - Navigate to `/admin/login`
+   - Enter credentials to access blockchain management
+
+### Blockchain Management Features
+
+#### 1. Institution Registration on Blockchain
+```typescript
+// Backend automatically registers institutions when approved
+// Admin can also manually register institutions:
+
+POST /api/admin/institutions/:institutionId/blockchain-register
+Headers: { 'admin-email': 'admin@educhain.com' }
+```
+
+#### 2. Bulk Registration
+```typescript
+// Register all verified institutions at once
+POST /api/admin/blockchain-register-all
+Headers: { 'admin-email': 'admin@educhain.com' }
+```
+
+#### 3. Institution Authorization
+```typescript
+// Authorize institutions to issue certificates
+POST /api/admin/institutions/:institutionId/blockchain-authorize
+Headers: { 'admin-email': 'admin@educhain.com' }
+```
+
+### Blockchain Status Monitoring
+- **Summary Dashboard**: Overview of all institutions' blockchain status
+- **Individual Tracking**: Detailed status for each institution
+- **Transaction History**: View blockchain transaction hashes
+- **Error Reporting**: Comprehensive error tracking for failed operations
+
+### Network Configuration
+- **Testnet**: Sepolia (Ethereum testnet)
+- **Explorer**: Etherscan integration for transaction verification
+- **Smart Contract**: EduChain certificate management contract
 
 ## Usage Examples
 

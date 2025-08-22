@@ -24,6 +24,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import BlockchainManagement from "@/components/BlockchainManagement";
 
 interface VerificationRequest {
   id: string;
@@ -66,6 +67,7 @@ export default function AdminDashboard() {
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [reviewModal, setReviewModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'blockchain'>('overview');
   const { toast } = useToast();
 
   const form = useForm<ReviewForm>({
@@ -90,6 +92,23 @@ export default function AdminDashboard() {
       setLoading(true);
       const API_BASE = import.meta.env.VITE_API_URL || '';
       
+      // First, test the connection
+      try {
+        const healthResponse = await fetch(`${API_BASE}/api/health`);
+        if (!healthResponse.ok) {
+          throw new Error(`Backend health check failed: ${healthResponse.status}`);
+        }
+        console.log('Backend connection successful');
+      } catch (healthError) {
+        console.error('Backend connection failed:', healthError);
+        toast({
+          title: "Connection Error",
+          description: "Cannot connect to backend. Please check if the backend is running.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const [verificationResponse, revenueResponse] = await Promise.all([
         fetch(`${API_BASE}/admin/verification-requests`, {
           headers: { 'admin-email': 'admin@educhain.com' }
@@ -99,12 +118,12 @@ export default function AdminDashboard() {
         }).catch(() => ({ ok: false, data: null }))
       ]);
 
-      if (verificationResponse.ok) {
+      if (verificationResponse.ok && 'json' in verificationResponse) {
         const verificationData = await verificationResponse.json();
         setVerificationRequests(verificationData.verificationRequests || []);
       }
 
-      if (revenueResponse.ok) {
+      if (revenueResponse.ok && 'json' in revenueResponse) {
         const revenueData = await revenueResponse.json();
         setRevenueData(revenueData);
       }
@@ -243,7 +262,27 @@ export default function AdminDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        {/* Revenue Analytics */}
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 mb-6">
+          <Button
+            variant={activeTab === 'overview' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('overview')}
+            size="sm"
+          >
+            Overview
+          </Button>
+          <Button
+            variant={activeTab === 'blockchain' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('blockchain')}
+            size="sm"
+          >
+            Blockchain Management
+          </Button>
+        </div>
+
+        {activeTab === 'overview' && (
+          <>
+            {/* Revenue Analytics */}
         {revenueData && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
@@ -463,6 +502,12 @@ export default function AdminDashboard() {
             )}
           </DialogContent>
         </Dialog>
+          </>
+        )}
+
+        {activeTab === 'blockchain' && (
+          <BlockchainManagement />
+        )}
       </div>
     </div>
   );

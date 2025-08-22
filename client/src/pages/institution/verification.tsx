@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle, Clock, AlertCircle, Upload, Eye, FileText } from "lucide-react";
+import { CheckCircle, Clock, AlertCircle, Upload, Eye, FileText, Shield } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -154,13 +154,27 @@ export default function Verification() {
           <CardTitle>Verification Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {getVerificationStep("Documents", status === 'approved', status === 'pending')}
             {getVerificationStep("Identity", isVerified, status === 'pending')}
             {getVerificationStep("Accreditation", isVerified, status === 'pending')}
+            {getVerificationStep("Blockchain", isVerified && verificationStatus?.blockchainRegistered, isVerified && !verificationStatus?.blockchainRegistered)}
           </div>
         </CardContent>
       </Card>
+
+      {/* Blockchain Status Alert */}
+      {isVerified && (
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription>
+            {verificationStatus?.blockchainRegistered 
+              ? "Your institution is registered on the blockchain and can issue certificates."
+              : "Your institution is verified but blockchain registration is pending. This will be completed automatically by our admin team."
+            }
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Document Upload Section */}
       <Card>

@@ -103,9 +103,25 @@ export default function StudentPortal() {
     
     setIsVerifying(true);
     try {
-      const result = await verifyCertificate(verificationId.trim());
+      // Try different verification methods
+      let result;
+      
+      // Check if it's an IPFS hash (starts with Qm)
+      if (verificationId.trim().startsWith('Qm')) {
+        result = await api.verifyCertificateByIPFS(verificationId.trim());
+      }
+      // Check if it's a token ID (numeric)
+      else if (/^\d+$/.test(verificationId.trim())) {
+        result = await api.verifyCertificateByToken(parseInt(verificationId.trim(), 10));
+      }
+      // Otherwise try as certificate ID
+      else {
+        result = await api.verifyCertificate(verificationId.trim());
+      }
+      
       setVerificationResult(result);
     } catch (error: any) {
+      console.error('Verification error:', error);
       setVerificationResult({
         valid: false,
         error: error.message || "Certificate not found or invalid"
@@ -242,45 +258,104 @@ export default function StudentPortal() {
               {/* Show issued certificates waiting to be minted */}
               {issuedCertificates.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="text-lg font-medium text-neutral-700 mb-4">Available to Mint</h3>
+                  <h3 className="text-lg font-medium text-neutral-700 mb-4">
+                    Your Issued Certificates ({issuedCertificates.length})
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {issuedCertificates.filter((cert: any) => !cert.isMinted).map((certificate: any) => (
-                      <Card key={certificate.id} className="border-blue-200 bg-blue-50">
+                    {issuedCertificates.map((certificate: any) => (
+                      <Card key={certificate.id} className={`${!certificate.isMinted ? 'border-blue-200 bg-blue-50' : 'border-green-200 bg-green-50'}`}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <h4 className="font-semibold text-blue-900">{certificate.courseName}</h4>
-                              <p className="text-sm text-blue-700">{certificate.institutionName}</p>
-                              <p className="text-xs text-blue-600">Grade: {certificate.grade}</p>
+                              <h4 className="font-semibold text-neutral-900">{certificate.courseName}</h4>
+                              <p className="text-sm text-neutral-700">{certificate.institutionName}</p>
+                              <p className="text-xs text-neutral-600">Grade: {certificate.grade}</p>
+                              <p className="text-xs text-neutral-500">
+                                Issued: {format(new Date(certificate.issuedAt), "MMM dd, yyyy")}
+                              </p>
+                              {certificate.ipfsHash && (
+                                <p className="text-xs text-neutral-500 font-mono">
+                                  IPFS: {certificate.ipfsHash.slice(0, 10)}...
+                                </p>
+                              )}
                             </div>
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                              Ready to Mint
+                            <Badge variant="secondary" className={certificate.isMinted ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}>
+                              {certificate.isMinted ? "Minted ✓" : "Ready to Mint"}
                             </Badge>
                           </div>
                           
-                          <Button 
-                            size="sm" 
-                            className="w-full"
-                            onClick={() => mintCertificateMutation.mutate(certificate)}
-                            disabled={mintCertificateMutation.isPending}
-                            data-testid={`mint-certificate-${certificate.id}`}
-                          >
-                            {mintCertificateMutation.isPending ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Minting...
-                              </>
-                            ) : (
-                              <>
-                                <Coins className="w-4 h-4 mr-2" />
-                                Mint to Blockchain
-                              </>
-                            )}
-                          </Button>
+                          {!certificate.isMinted && (
+                            <Button 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => mintCertificateMutation.mutate(certificate)}
+                              disabled={mintCertificateMutation.isPending}
+                              data-testid={`mint-certificate-${certificate.id}`}
+                            >
+                              {mintCertificateMutation.isPending ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Minting...
+                                </>
+                              ) : (
+                                <>
+                                  <Coins className="w-4 h-4 mr-2" />
+                                  Mint to Blockchain
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          
+                          {certificate.isMinted && (
+                            <div className="space-y-2">
+                              <div className="text-xs text-green-700">
+                                ✓ Minted on blockchain
+                              </div>
+                              {certificate.tokenId && (
+                                <div className="text-xs text-neutral-600">
+                                  Token ID: #{certificate.tokenId}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {loadingIssued && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-medium text-neutral-700 mb-4">Loading your certificates...</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <Card key={i}>
+                        <CardContent className="p-4">
+                          <Skeleton className="h-4 w-3/4 mb-2" />
+                          <Skeleton className="h-3 w-1/2 mb-2" />
+                          <Skeleton className="h-3 w-1/3 mb-4" />
+                          <Skeleton className="h-8 w-full" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!loadingIssued && issuedCertificates.length === 0 && (
+                <div className="mb-8">
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-6 h-6 text-neutral-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-neutral-900 mb-2">No certificates found</h3>
+                      <p className="text-neutral-500">
+                        No certificates have been issued to wallet address: {walletAddress}
+                      </p>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
 
@@ -388,8 +463,17 @@ export default function StudentPortal() {
               </CardHeader>
               <CardContent>
                 <p className="text-neutral-600 mb-4">
-                  Enter a certificate ID or blockchain hash to verify its authenticity.
+                  Enter a certificate ID, IPFS hash, or token ID to verify its authenticity.
                 </p>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-medium text-blue-900 mb-2">Verification Methods:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• <strong>Certificate ID:</strong> The unique ID from the certificate</li>
+                    <li>• <strong>IPFS Hash:</strong> Starts with "Qm" (e.g., QmZyAGfoTeib5JGv9bBZ6HYisgUPEAMskAF2z7PU7C7Yii)</li>
+                    <li>• <strong>Token ID:</strong> The blockchain token number</li>
+                  </ul>
+                </div>
                 
                 <div className="flex space-x-3 mb-4">
                   <Input
