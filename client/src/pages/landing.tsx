@@ -111,19 +111,19 @@ export default function Landing() {
  {/* Image Section */}
  <div className="flex justify-left mb-8" style={{ marginLeft: '2in',  }}>
    <img 
-     src="/images/picture1.png" 
+     src="/images/Picture1.png" 
      alt="Student holding an EduChain certificate" 
      className="w-[400px] h-[720px] object-cover rounded-lg shadow-lg"
      style={{ marginTop: '0.5in', marginBottom: '0.5in', marginRight: '24px' }}
    />
    <img 
-     src="/images/picture3.png" 
+     src="/images/Picture3.png" 
      alt="Student holding an EduChain certificate" 
      className="w-[1024px] h-[720px] object-cover rounded-lg shadow-lg"
      style={{ marginTop: '0.5in', marginBottom: '0.5in', marginRight: '24px' }}
    />
    <img 
-     src="/images/picture2.png" 
+     src="/images/Picture2.png" 
      alt="A certificate in wallet" 
      className="w-[400px] h-[720px] object-cover rounded-lg shadow-lg"
      style={{ marginTop: '0.5in', marginBottom: '0.5in' }}
