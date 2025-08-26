@@ -7,6 +7,7 @@ import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  base: "/",
   define: {
     'import.meta.env.VITE_API_BASE': JSON.stringify(process.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com'),
     'import.meta.env.VITE_CONTRACT_ADDRESS': JSON.stringify(process.env.VITE_CONTRACT_ADDRESS || '0xBD4228241dc6BC14C027bF8B6A24f97bc9872068'),
@@ -35,6 +36,11 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
   server: {
     fs: {
