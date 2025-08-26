@@ -170,7 +170,7 @@ export class CertificateService {
       const response: CertificateVerificationResponse = {
         certificateId: '',
         ipfsHash,
-        isValid: blockchainResult.exists && blockchainResult.certificate?.isValid,
+        isValid: !!(blockchainResult.exists && blockchainResult.certificate?.isValid),
         verificationSource: blockchainResult.exists ? 'blockchain' : 'backend'
       };
 

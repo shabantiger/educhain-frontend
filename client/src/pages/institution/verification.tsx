@@ -120,9 +120,9 @@ export default function Verification() {
     );
   }
 
-  const isVerified = verificationStatus?.isVerified;
-  const status = verificationStatus?.verificationStatus || 'not_submitted';
-  const documents = verificationStatus?.verificationDocuments || [];
+  const isVerified = (verificationStatus as any)?.isVerified;
+  const status = (verificationStatus as any)?.verificationStatus || 'not_submitted';
+  const documents = (verificationStatus as any)?.verificationDocuments || [];
 
   return (
     <div className="space-y-6">
@@ -158,7 +158,7 @@ export default function Verification() {
             {getVerificationStep("Documents", status === 'approved', status === 'pending')}
             {getVerificationStep("Identity", isVerified, status === 'pending')}
             {getVerificationStep("Accreditation", isVerified, status === 'pending')}
-            {getVerificationStep("Blockchain", isVerified && verificationStatus?.blockchainRegistered, isVerified && !verificationStatus?.blockchainRegistered)}
+            {getVerificationStep("Blockchain", isVerified && (verificationStatus as any)?.blockchainRegistered, isVerified && !(verificationStatus as any)?.blockchainRegistered)}
           </div>
         </CardContent>
       </Card>
@@ -168,7 +168,7 @@ export default function Verification() {
         <Alert>
           <Shield className="h-4 w-4" />
           <AlertDescription>
-            {verificationStatus?.blockchainRegistered 
+            {(verificationStatus as any)?.blockchainRegistered 
               ? "Your institution is registered on the blockchain and can issue certificates."
               : "Your institution is verified but blockchain registration is pending. This will be completed automatically by our admin team."
             }
@@ -196,7 +196,7 @@ export default function Verification() {
               <h4 className="font-medium text-neutral-900 mb-2">Registration Certificate</h4>
               <p className="text-sm text-neutral-500 mb-3">Official business registration document</p>
               <div className="flex items-center text-sm">
-                {documents.some(doc => doc.type.includes('Registration')) ? (
+                {documents.some((doc: any) => doc.type.includes('Registration')) ? (
                   <>
                     <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
                     <span className="text-green-600">Uploaded</span>
@@ -214,7 +214,7 @@ export default function Verification() {
               <h4 className="font-medium text-neutral-900 mb-2">Accreditation Certificate</h4>
               <p className="text-sm text-neutral-500 mb-3">Educational accreditation documents</p>
               <div className="flex items-center text-sm">
-                {documents.some(doc => doc.type.includes('Accreditation')) ? (
+                {documents.some((doc: any) => doc.type.includes('Accreditation')) ? (
                   <>
                     <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
                     <span className="text-green-600">Uploaded</span>
@@ -232,7 +232,7 @@ export default function Verification() {
               <h4 className="font-medium text-neutral-900 mb-2">Identity Verification</h4>
               <p className="text-sm text-neutral-500 mb-3">Director/Administrator ID documents</p>
               <div className="flex items-center text-sm">
-                {documents.some(doc => doc.type.includes('Identity')) ? (
+                {documents.some((doc: any) => doc.type.includes('Identity')) ? (
                   <>
                     <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
                     <span className="text-green-600">Uploaded</span>

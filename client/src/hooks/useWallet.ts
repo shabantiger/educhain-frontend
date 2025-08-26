@@ -152,7 +152,7 @@ export function useWallet() {
   const verifyCertificate = async (certificateId: string) => {
     try {
       // Try blockchain service first
-      const result = await blockchainService.verifyCertificate(certificateId);
+      const result = await blockchainService.verifyCertificate(parseInt(certificateId, 10));
       return result;
     } catch (error: any) {
       // Fallback to API endpoint
@@ -225,7 +225,7 @@ export function useWallet() {
 
   const revokeCertificate = async (certificateId: string) => {
     try {
-      const txHash = await blockchainService.revokeCertificate(certificateId);
+      const txHash = await blockchainService.revokeCertificate(parseInt(certificateId, 10));
       
       // Refetch certificates after revoking
       await refetchCertificates();

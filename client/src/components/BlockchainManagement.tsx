@@ -200,9 +200,9 @@ export default function BlockchainManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary?.blockchainRegistered || 0}</div>
-            {summary?.pendingBlockchainRegistration > 0 && (
+            {(summary?.pendingBlockchainRegistration || 0) > 0 && (
               <p className="text-xs text-muted-foreground">
-                {summary.pendingBlockchainRegistration} pending
+                {summary?.pendingBlockchainRegistration || 0} pending
               </p>
             )}
           </CardContent>
@@ -215,9 +215,9 @@ export default function BlockchainManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary?.blockchainAuthorized || 0}</div>
-            {summary?.pendingBlockchainAuthorization > 0 && (
+            {(summary?.pendingBlockchainAuthorization || 0) > 0 && (
               <p className="text-xs text-muted-foreground">
-                {summary.pendingBlockchainAuthorization} pending
+                {summary?.pendingBlockchainAuthorization || 0} pending
               </p>
             )}
           </CardContent>
@@ -256,11 +256,11 @@ export default function BlockchainManagement() {
             </Button>
           </div>
 
-          {summary?.pendingBlockchainRegistration > 0 && (
+          {(summary?.pendingBlockchainRegistration || 0) > 0 && (
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                {summary.pendingBlockchainRegistration} verified institutions are not yet registered on blockchain.
+                {summary?.pendingBlockchainRegistration || 0} verified institutions are not yet registered on blockchain.
                 Use bulk registration to process them all at once.
               </AlertDescription>
             </Alert>

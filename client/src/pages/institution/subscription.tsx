@@ -157,9 +157,9 @@ export default function SubscriptionPage() {
     },
   ];
 
-  const currentSubscription = subscriptionData?.subscription;
-  const usage = subscriptionData?.usage || {};
-  const payments = paymentsData?.payments || [];
+  const currentSubscription = (subscriptionData as any)?.subscription;
+  const usage = (subscriptionData as any)?.usage || {};
+  const payments = (paymentsData as any)?.payments || [];
 
   const getUsagePercentage = (used: number, limit: number) => {
     if (limit === -1) return 0; // Unlimited

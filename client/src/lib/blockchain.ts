@@ -1,6 +1,9 @@
 import { ethers } from 'ethers';
 import { CONTRACT_CONFIG, type CertificateData, type InstitutionStats } from './contract';
 
+// Re-export types for external use
+export type { CertificateData, InstitutionStats };
+
 // Initialize provider with error handling
 let provider: ethers.JsonRpcProvider;
 

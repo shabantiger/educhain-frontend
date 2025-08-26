@@ -262,7 +262,7 @@ export default function InstitutionDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
+              {recentActivities.map((activity: any, index: number) => (
                 <div key={index} className="flex items-start space-x-4 p-4 rounded-lg bg-neutral-50">
                   <div className={`p-2 rounded-full ${activity.bg}`}>
                     <activity.icon className={`w-4 h-4 ${activity.color}`} />
