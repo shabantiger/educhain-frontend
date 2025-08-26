@@ -90,7 +90,7 @@ export default function AdminDashboard() {
   const fetchAdminData = async () => {
     try {
       setLoading(true);
-      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
       
       // First, test the connection
       try {
@@ -110,23 +110,63 @@ export default function AdminDashboard() {
       }
       
       const [verificationResponse, revenueResponse] = await Promise.all([
-        fetch(`${API_BASE}/admin/verification-requests`, {
+        fetch(`${API_BASE}/api/admin/verification-requests`, {
           headers: { 'admin-email': 'admin@educhain.com' }
-        }).catch(() => ({ ok: false, data: null })),
-        fetch(`${API_BASE}/admin/revenue`, {
+        }).catch(() => new Response('{"error": "Request failed"}', { status: 500 })),
+        fetch(`${API_BASE}/api/admin/revenue`, {
           headers: { 'admin-email': 'admin@educhain.com' }
-        }).catch(() => ({ ok: false, data: null }))
+        }).catch(() => new Response('{"error": "Request failed"}', { status: 500 }))
       ]);
 
-      if (verificationResponse.ok && 'json' in verificationResponse) {
-        const verificationData = await verificationResponse.json();
-        setVerificationRequests(verificationData.verificationRequests || []);
-      }
+      console.log('Verification response status:', verificationResponse.status);
+      console.log('Verification response URL:', verificationResponse.url);
+      
+             // Clone the response to avoid "body stream already read" error
+       const verificationResponseClone = verificationResponse.clone();
+       
+       if (verificationResponse.ok) {
+         try {
+           const verificationData = await verificationResponse.json();
+           setVerificationRequests(verificationData.verificationRequests || []);
+         } catch (error) {
+           console.error('Failed to parse verification response:', error);
+           // Log the actual response text to see what we're getting
+           const responseText = await verificationResponseClone.text();
+           console.error('Response text:', responseText.substring(0, 200) + '...');
+           setVerificationRequests([]);
+         }
+       } else {
+         console.error('Verification request failed:', verificationResponse.status, verificationResponse.statusText);
+         // Log the actual response text to see what we're getting
+         const responseText = await verificationResponseClone.text();
+         console.error('Response text:', responseText.substring(0, 200) + '...');
+         setVerificationRequests([]);
+       }
 
-      if (revenueResponse.ok && 'json' in revenueResponse) {
-        const revenueData = await revenueResponse.json();
-        setRevenueData(revenueData);
-      }
+      console.log('Revenue response status:', revenueResponse.status);
+      console.log('Revenue response URL:', revenueResponse.url);
+      
+             // Clone the response to avoid "body stream already read" error
+       const revenueResponseClone = revenueResponse.clone();
+       
+       if (revenueResponse.ok) {
+         try {
+           const revenueData = await revenueResponse.json();
+           setRevenueData(revenueData);
+         } catch (error) {
+           console.error('Failed to parse revenue response:', error);
+           // Log the actual response text to see what we're getting
+           const responseText = await revenueResponseClone.text();
+           console.error('Response text:', responseText.substring(0, 200) + '...');
+           setRevenueData(null);
+         }
+       } else {
+         console.error('Revenue request failed:', revenueResponse.status, revenueResponse.statusText);
+         // Log the actual response text to see what we're getting
+         const responseText = await revenueResponseClone.text();
+         console.error('Response text:', responseText.substring(0, 200) + '...');
+         setRevenueData(null);
+       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
       toast({
@@ -144,9 +184,9 @@ export default function AdminDashboard() {
     
     setIsSubmitting(true);
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
       
-      const response = await fetch(`${API_BASE}/admin/verification-requests/${selectedRequest.verificationRequestId}/review`, {
+      const response = await fetch(`${API_BASE}/api/admin/verification-requests/${selectedRequest.verificationRequestId}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
