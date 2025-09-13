@@ -164,7 +164,11 @@ export default function StudentPortalModal({ open, onOpenChange }: StudentPortal
                               {certificate.institutionName}
                             </p>
                             <p className="text-xs text-neutral-500">
-                              Issued: {format(new Date(certificate.issuedAt), "MMMM dd, yyyy")}
+                              Issued: {
+                                certificate.issuedAt && !isNaN(new Date(certificate.issuedAt).getTime())
+                                  ? format(new Date(certificate.issuedAt), "MMMM dd, yyyy")
+                                  : "N/A"
+                              }
                             </p>
                           </div>
                           

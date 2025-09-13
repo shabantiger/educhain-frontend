@@ -49,7 +49,7 @@ export const api = {
   // Test admin endpoint
   testAdmin: async () => {
     const response = await fetch(`${API_BASE}/api/admin/test`, {
-      headers: { 'admin-email': 'admin@educhain.com' },
+      headers: { 'admin-email': 'admin@educreds.com' },
     });
     return handleResponse(response);
   },
@@ -302,14 +302,14 @@ export const api = {
   // Admin blockchain endpoints
   getBlockchainSummary: async () => {
     const response = await fetch(`${API_BASE}/api/admin/blockchain-summary`, {
-      headers: { 'admin-email': 'admin@educhain.com' },
+      headers: { 'admin-email': 'admin@educreds.com' },
     });
     return handleResponse(response);
   },
 
   getBlockchainStatusAll: async () => {
     const response = await fetch(`${API_BASE}/api/admin/blockchain-status`, {
-      headers: { 'admin-email': 'admin@educhain.com' },
+      headers: { 'admin-email': 'admin@educreds.com' },
     });
     return handleResponse(response);
   },
@@ -319,7 +319,7 @@ export const api = {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'admin-email': 'admin@educhain.com' 
+        'admin-email': 'admin@educreds.com' 
       },
     });
     return handleResponse(response);
@@ -330,7 +330,7 @@ export const api = {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'admin-email': 'admin@educhain.com' 
+        'admin-email': 'admin@educreds.com' 
       },
     });
     return handleResponse(response);
@@ -341,7 +341,7 @@ export const api = {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'admin-email': 'admin@educhain.com' 
+        'admin-email': 'admin@educreds.com' 
       },
     });
     return handleResponse(response);

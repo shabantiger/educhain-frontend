@@ -38,7 +38,7 @@ export default function Login() {
       
       toast({
         title: "Login successful",
-        description: "Welcome back to EduChain!",
+        description: "Welcome back to EduCreds!",
       });
       
       setLocation("/dashboard");
@@ -53,7 +53,7 @@ export default function Login() {
     <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Sign In to EduChain</CardTitle>
+          <CardTitle className="text-2xl font-bold">Sign In to EduCreds</CardTitle>
           <p className="text-neutral-600">Enter your credentials to access your institution dashboard</p>
         </CardHeader>
         
@@ -76,7 +76,7 @@ export default function Login() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="educhain@example.com"
+                        placeholder="educreds@example.com"
                         {...field}
                         data-testid="input-email"
                       />

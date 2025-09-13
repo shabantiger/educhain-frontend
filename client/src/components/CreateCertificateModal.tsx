@@ -35,6 +35,7 @@ const createCertificateSchema = z.object({
   grade: z.string().min(1, "Grade is required"),
   completionDate: z.string().min(1, "Completion date is required"),
   description: z.string().optional(),
+  certificateType: z.string().min(1, "Certificate type is required"),
 });
 
 type CreateCertificateForm = z.infer<typeof createCertificateSchema>;
@@ -62,6 +63,7 @@ export default function CreateCertificateModal({ open, onOpenChange }: CreateCer
       grade: "",
       completionDate: "",
       description: "",
+      certificateType: "",
     },
   });
 
@@ -287,6 +289,37 @@ export default function CreateCertificateModal({ open, onOpenChange }: CreateCer
                         {...field} 
                         data-testid="input-description"
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Certificate Type */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Certificate Type</h3>
+              
+              <FormField
+                control={form.control}
+                name="certificateType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Certificate Type *</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        required
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        data-testid="input-certificate-type"
+                      >
+                        <option value="">Select type</option>
+                        <option value="certificate">Certificate</option>
+                        <option value="diploma">Diploma</option>
+                        <option value="bachelors">Bachelors</option>
+                        <option value="masters">Masters</option>
+                        <option value="phd">PhD</option>
+                      </select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

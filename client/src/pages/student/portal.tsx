@@ -310,22 +310,25 @@ export default function StudentPortal() {
                           )}
                           
                           {certificate.isMinted && (
-                            <div className="space-y-2">
+                            <div className="space-y-2 mt-2">
                               <div className="text-xs text-green-700">
                                 ✓ Minted on blockchain
                               </div>
                               {certificate.tokenId && (
-                                <div className="text-xs text-neutral-600">
-                                  Token ID: #{certificate.tokenId}
+                                <div className="flex items-center text-xs text-neutral-700">
+                                  <span className="font-semibold mr-1">Token ID:</span>
+                                  <span className="font-mono bg-neutral-100 px-2 py-0.5 rounded select-all">{certificate.tokenId}</span>
                                 </div>
                               )}
                               {certificate.ipfsHash && (
-                                <div className="text-xs text-neutral-600 font-mono">
-                                  IPFS: {certificate.ipfsHash ? `${certificate.ipfsHash.slice(0, 10)}...` : 'Not available'}
+                                <div className="flex items-center text-xs text-neutral-700">
+                                  <span className="font-semibold mr-1">IPFS:</span>
+                                  <span className="font-mono bg-neutral-100 px-2 py-0.5 rounded select-all break-all">{certificate.ipfsHash}</span>
                                 </div>
                               )}
-                              <div className="text-xs text-neutral-600">
-                                Cert ID: {certificate.id}
+                              <div className="flex items-center text-xs text-neutral-700">
+                                <span className="font-semibold mr-1">Cert ID:</span>
+                                <span className="font-mono bg-neutral-100 px-2 py-0.5 rounded select-all">{certificate.id}</span>
                               </div>
                             </div>
                           )}

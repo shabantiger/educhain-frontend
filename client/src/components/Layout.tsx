@@ -46,9 +46,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center space-x-4">
               <div className="flex-shrink-0">
                 <Link href="/dashboard">
-                  <h1 className="text-2xl font-bold text-neutral-900" data-testid="logo">
-                    EduChain
-                  </h1>
+                  <div className="flex items-center space-x-2">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="16" cy="16" r="16" fill="url(#logo-gradient)" />
+                      <path d="M10 22L16 10L22 22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <defs>
+                        <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                          <stop stopColor="#6366F1" />
+                          <stop offset="1" stopColor="#06B6D4" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <h1 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-500 to-cyan-400 bg-clip-text text-transparent animate-gradient-move drop-shadow-sm" data-testid="logo">
+                      EduCreds
+                    </h1>
+                  </div>
                   <span className="text-xs text-neutral-500">Blockchain Certificates</span>
                 </Link>
               </div>

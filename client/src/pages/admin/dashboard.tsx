@@ -111,10 +111,10 @@ export default function AdminDashboard() {
       
       const [verificationResponse, revenueResponse] = await Promise.all([
         fetch(`${API_BASE}/api/admin/verification-requests`, {
-          headers: { 'admin-email': 'admin@educhain.com' }
+          headers: { 'admin-email': 'admin@educreds.com' }
         }).catch(() => new Response('{"error": "Request failed"}', { status: 500 })),
         fetch(`${API_BASE}/api/admin/revenue`, {
-          headers: { 'admin-email': 'admin@educhain.com' }
+          headers: { 'admin-email': 'admin@educreds.com' }
         }).catch(() => new Response('{"error": "Request failed"}', { status: 500 }))
       ]);
 
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'admin-email': 'admin@educhain.com'
+          'admin-email': 'admin@educreds.com'
         },
         body: JSON.stringify(data)
       });

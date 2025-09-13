@@ -8,7 +8,7 @@ const VerificationSection = () => {
       <div className="w-full">
         <img 
           src="/images/bg.png" 
-          alt="EduChain Verification" 
+          alt="EduCreds Verification" 
           className="w-full h-auto object-cover"
         />
       </div>
@@ -105,7 +105,7 @@ const VerificationSection = () => {
         {/* Bottom description */}
         <div className="text-center">
           <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-             EduChain technology ensures certificates cannot be forged, altered, or duplicated, providing ultimate security.
+             EduCreds technology ensures certificates cannot be forged, altered, or duplicated, providing ultimate security.
           </p>
         </div>
               </div>

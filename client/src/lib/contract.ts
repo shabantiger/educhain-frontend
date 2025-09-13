@@ -1,4 +1,4 @@
-// Contract ABI for EduChain Certificate Contract
+// Contract ABI for EduCreds Certificate Contract
 export const CONTRACT_ABI = [
   {
     "inputs": [
@@ -112,7 +112,7 @@ export const CONTRACT_ABI = [
             "type": "string"
           }
         ],
-        "internalType": "struct EduChainCertificate.CertificateData",
+        "internalType": "struct EduCredsCertificate.CertificateData",
         "name": "",
         "type": "tuple"
       }
@@ -193,7 +193,7 @@ export const CONTRACT_ABI = [
             "type": "string"
           }
         ],
-        "internalType": "struct EduChainCertificate.CertificateData",
+        "internalType": "struct EduCredsCertificate.CertificateData",
         "name": "cert",
         "type": "tuple"
       }

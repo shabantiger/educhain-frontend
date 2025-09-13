@@ -12,12 +12,14 @@ import { insertInstitutionSchema, type InsertInstitution } from "@shared/schema"
 import { api } from "@/lib/api";
 import { auth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function Register() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
+  const { isConnected, walletAddress, connect, isLoading: walletLoading, error: walletError } = useWallet();
 
   const form = useForm<InsertInstitution>({
     resolver: zodResolver(insertInstitutionSchema),
@@ -38,16 +40,14 @@ export default function Register() {
   const onSubmit = async (data: InsertInstitution) => {
     setIsLoading(true);
     setError("");
-
     try {
-      const response = await api.register(data);
+      // Always register as institution
+      const response = await api.register({ ...data, role: "institution", walletAddress });
       auth.setToken(response.token);
-      
       toast({
         title: "Registration successful!",
         description: "Your institution has been registered. Verification request submitted.",
       });
-      
       setLocation("/dashboard");
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");
@@ -61,7 +61,7 @@ export default function Register() {
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Register Your Institution</CardTitle>
-          <p className="text-neutral-600">Join EduChain to start issuing blockchain certificates</p>
+          <p className="text-neutral-600">Join EduCreds to start issuing blockchain certificates</p>
         </CardHeader>
         
         <CardContent>
@@ -83,7 +83,7 @@ export default function Register() {
                       <FormLabel>Institution Name</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="EduChain university"
+                          placeholder="EduCreds university"
                           {...field}
                           data-testid="input-name"
                         />
@@ -121,7 +121,7 @@ export default function Register() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="admin@educhain.edu"
+                        placeholder="admin@educreds.edu"
                         {...field}
                         data-testid="input-email"
                       />
@@ -157,13 +157,20 @@ export default function Register() {
                   <FormItem>
                     <FormLabel>Wallet Address</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="0x742d35Cc6634C0532925a3b8D45d5b1E5b8a9C12"
-                        {...field}
-                        data-testid="input-wallet"
-                      />
+                      <div className="flex gap-2 items-center">
+                        <Input
+                          placeholder="0x742d..."
+                          {...field}
+                          value={walletAddress}
+                          readOnly
+                          data-testid="input-wallet"
+                        />
+                        <Button type="button" onClick={connect} disabled={walletLoading}>
+                          {walletLoading ? "Connecting..." : isConnected ? "Connected" : "Connect Wallet"}
+                        </Button>
+                      </div>
                     </FormControl>
-                    <FormMessage />
+                    {walletError && <FormMessage>{walletError}</FormMessage>}
                   </FormItem>
                 )}
               />
@@ -198,7 +205,7 @@ export default function Register() {
                         <FormLabel>Website</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://educhain.edu"
+                            placeholder="https://educreds.edu"
                             {...field}
                             data-testid="input-website"
                           />

@@ -9,14 +9,19 @@ import {
   ChevronRight
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Landing() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [roadmapOpen, setRoadmapOpen] = useState(false);
+  const [documentationOpen, setDocumentationOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   
   const images = [
     {
       src: "/images/Picture1.png",
-      alt: "Student holding an EduChain certificate",
+      alt: "Student holding an EduCreds certificate",
       title: "Student Certificate Verification"
     },
     {
@@ -43,29 +48,45 @@ export default function Landing() {
     setCurrentImageIndex(index);
   };
 
-  // Auto-advance slides every 30 seconds
+  // Auto-advance slides every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       nextImage();
-    }, 30000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
+  // Fix: roadmapText should be a string, not a code block or template literal with unescaped newlines
+const roadmapText = `EDUCREDS PROJECT ROADMAP: A DETAILED BREAKDOWN\n\nEducreds is developing a blockchain-based platform for secure, verifiable, and accessible academic certificates. This roadmap outlines the project's phased development and future expansion.\n\nPHASE 1: FOUNDATION (Q1 2025)\nThis foundational phase focuses on establishing the core technical components of the Educreds platform.\n\n  - Smart Contract Development (Q2 2025):\n    • Creation and testing of an NFT-based certificate contract (ERC721).\n    • Implementation of logic for issuing, verifying, and revoking academic certificates.\n\n  - Frontend MVP and Backend Deployment (Q2 2025):\n    • Development of a user interface (UI) for institutions to issue certificates.\n    • Development of a UI for verifiers (employers, parents) to check certificate authenticity.\n\n  - Testnet Deployment (Q4 2026):\n    • Deployment of the smart contract to Base Testnet or Sepolia.\n    • Execution of functional tests for minting and viewing certificates.\n\nPHASE 2: BETA RELEASE (Q1-Q3 2026)\nThis phase involves public testing and the integration of key features to enhance platform functionality.\n\n  - Launch Web App Publicly (Testnet):\n    • Invitation for real schools to test the platform.\n    • Inclusion of institution registration and simple verification functionalities.\n\n  - PDF Generation & IPFS Integration (Q3 2026):\n    • Automated generation of PDF versions of certificates with all associated metadata.\n    • Storage of PDF hashes on IPFS, with links to the corresponding NFTs.\n\n  - Role Management (Q3 2026):\n    • Addition of frontend separation for "Issuer" and "Verifier" views.\n\n  - Gather Feedback:\n    • Onboarding of early testers to collect crucial user experience (UX) and functionality feedback.\n\nPHASE 3: TOKEN INTEGRATION & MAINNET (Q4 2026)\nThis crucial phase marks the introduction of the native token and the transition to the mainnet.\n\n  - Launch $EDUC Token (ERC20):\n    • Deployment of the project's native utility token for subscriptions, access fees, or verification credits.\n\n  - Subscription System:\n    • Institutions will pay monthly or per-certificate fees using the $EDUC token.\n    • Verifiers (employers) will pay small, gas-free fees for deep verification access.\n\n  - Smart Contract Upgrade:\n    • Inclusion of token-based access controls and advanced metadata formats.\n\n  - Deploy to Base or Polygon Mainnet:\n    • Migration of tested contracts and data to the production environment.\n\nPHASE 4: EXPANSION & ECOSYSTEM (2026+)\nThis phase focuses on broad expansion and ecosystem development to maximize Educreds's utility and reach.\n\n  - API + SDK for Integration:\n    • Allowing third parties, such as universities and EdTech platforms, to integrate via API.\n\n  - Mobile App:\n    • Enabling on-the-go verification and certificate scanning.\n\n  - ZK/Privacy Layer:\n    • Integrating zero-knowledge proofs for privacy-compliant certificate verification.\n\n  - Partner Onboarding:\n    • Collaborating with government bodies, schools, and recruiters to foster adoption.\n\n  - Token Utility Expansion:\n    • Introducing a reward system, staking for trusted institutions, gas subsidies, and other token-related utilities.\n\n  - Certificate Templates Marketplace:\n    • Purchase custom certificate styles using $EDUC.\n\n  - Graduate Badges:\n    • NFTs representing student milestones.\n\n  - AI Detection for Certificate Fraud:\n    • Implementing AI to combat certificate fraud.`;
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-neutral-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-neutral-900" data-testid="logo">
-                EduChain
-              </h1>
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                Blockchain Certificates
-              </Badge>
-            </div>
+    <div className="min-h-screen bg-neutral-50">
+          {/* Header */}
+          <header className="bg-white shadow-sm border-b border-neutral-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0">
+                    
+                      <div className="flex items-center space-x-2">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="16" cy="16" r="16" fill="url(#logo-gradient)" />
+                          <path d="M10 22L16 10L22 22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <defs>
+                            <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                              <stop stopColor="#6366F1" />
+                              <stop offset="1" stopColor="#06B6D4" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <h1 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-500 to-cyan-400 bg-clip-text text-transparent animate-gradient-move drop-shadow-sm" data-testid="logo">
+                          EduCreds
+                        </h1>
+                      </div>
+                      <span className="text-xs text-neutral-500">Blockchain Certificates</span>
+                    
+                  </div>
+                </div>
             
             <div className="flex items-center space-x-4">
               <Link href="/login">
@@ -103,7 +124,7 @@ export default function Landing() {
             <div className="flex items-center justify-center md:justify-start">
               <img
                 src="/images/logo.png"
-                alt="EduChain Logo"
+                alt="EduCreds Logo"
                 className="h-24 sm:h-32 md:h-40 lg:h-48 object-contain drop-shadow-lg"
                 style={{ maxWidth: "100%" }}
               />
@@ -150,7 +171,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-              See EduChain in Action
+              See EduCreds in Action
             </h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
               Discover how our platform transforms educational certificate management
@@ -280,7 +301,7 @@ export default function Landing() {
               Meet Our Team
             </h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              The brilliant minds behind EduChain, revolutionizing educational certificates through blockchain technology.
+              The brilliant minds behind EduCreds, revolutionizing educational certificates through blockchain technology.
             </p>
           </div>
           
@@ -449,7 +470,6 @@ export default function Landing() {
               </p>
               <div className="flex justify-center space-x-3">
                 <a href="https://linkedin.com/in/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 transition-colors">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.047-1.852-3.047-1.853 0-2.136 1.445-2.136 2.939v5.677H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                 </a>
                 <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-600 transition-colors">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.665 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
@@ -470,7 +490,7 @@ export default function Landing() {
             Ready to Revolutionize Educational Certificates?
           </h2>
           <p className="text-xl text-neutral-300 mb-8">
-            Join thousands of institutions already using EduChain to issue secure, verifiable certificates.
+            Join thousands of institutions already using EduCreds to issue secure, verifiable certificates.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -492,17 +512,24 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-neutral-900 mb-4">EduChain</h3>
+              <h3 className="font-bold text-neutral-900 mb-4">EduCreds</h3>
               <p className="text-neutral-600 mb-4">
                 Secure, verifiable educational certificates on the blockchain.
               </p>
             </div>
-            
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Product</h4>
               <ul className="space-y-2 text-neutral-600">
-                <li><Link href="/features">Features</Link></li>
-                <li><Link href="/subscription">Pricing</Link></li>
+                <li>
+                  <button type="button" onClick={() => setFeaturesOpen(true)} className="hover:underline text-left w-full">
+                    Features
+                  </button>
+                </li>
+                <li>
+                  <Link href="/subscription">
+                    <Button variant="link" className="p-0 h-auto text-neutral-600 hover:underline">Pricing</Button>
+                  </Link>
+                </li>
                 <li><Link href="/security">Security</Link></li>
               </ul>
             </div>
@@ -510,27 +537,176 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Support</h4>
               <ul className="space-y-2 text-neutral-600">
-                <li><Link href="https://drive.google.com/file/d/1IVeRYTUDOe2MN_hxZkT1YVs2yfT0i-3K/view?usp=sharing">Documentation</Link></li>
-                <li><Link href="/help">Help Center</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
+                <li>
+                  <button type="button" onClick={() => setDocumentationOpen(true)} className="hover:underline text-left w-full">
+                    Documentation
+                  </button>
+                </li>
+                <li>
+                  <button type="button" onClick={() => setContactOpen(true)} className="hover:underline text-left w-full">
+                    Connect
+                  </button>
+                </li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Company</h4>
               <ul className="space-y-2 text-neutral-600">
-                <li><Link href="https://drive.google.com/file/d/17OvFG0svXhhxYXDMbGB8BpufXiTG2Lp6/view?usp=drive_link">Roadmap</Link></li>
-                <li><Link href="https://drive.google.com/file/d/1l2ea-urAsEsKSm1FULpJ_S9WzIEDmPb1/view?usp=drive_link">ReadMe</Link></li>
-                <li><Link href="/careers">Careers</Link></li>
+                <li>
+                  <button type="button" onClick={() => setRoadmapOpen(true)} className="hover:underline text-left w-full">
+                    Roadmap
+                  </button>
+                </li>
+                <li>
+                  <Link href="/careers">Careers</Link>
+                </li>
+                <li>
+                  <a href="mailto:info@educreds.com" className="hover:underline">Email Us</a>
+                </li>
+                <li>
+                  <a href="/terms" className="hover:underline">Terms of Service</a>
+                </li>
+                <li>
+                  <a href="/privacy" className="hover:underline">Privacy Policy</a>
+                </li>
               </ul>
             </div>
           </div>
-          
           <div className="border-t border-neutral-200 mt-8 pt-8 text-center text-neutral-600">
-            <p>&copy; 2025 EduChain. All rights reserved.</p>
+            <p>&copy; 2025 EduCreds. All rights reserved.</p>
           </div>
         </div>
       </footer>
+
+      <Dialog open={roadmapOpen} onOpenChange={setRoadmapOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>EduCreds Project Roadmap</DialogTitle>
+          </DialogHeader>
+          <pre className="whitespace-pre-wrap text-sm text-neutral-800">{roadmapText}</pre>
+        </DialogContent>
+      </Dialog>
+<Dialog open={documentationOpen} onOpenChange={setDocumentationOpen}>
+  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Documentation</DialogTitle>
+    </DialogHeader>
+    <div className="text-sm text-neutral-800 space-y-6">
+      <section>
+        <h3 className="font-bold text-lg mb-2">EduCreds: Your Blockchain-Based Academic Certificate Platform</h3>
+        <p>
+          EduCreds is a revolutionary blockchain-powered platform designed to transform how academic certificates are issued, verified, and managed.
+        </p>
+      </section>
+      <section>
+        <h4 className="font-semibold mt-4 mb-1">What is EduCreds?</h4>
+        <ul className="list-disc list-inside ml-4">
+          <li>Allows educational institutions to issue academic certificates as Non-Fungible Tokens (NFTs).</li>
+          <li>Enables employers, students, and third parties to instantly verify the authenticity of certificates.</li>
+          <li>Eliminates certificate fraud, expedites verification, and provides a transparent, permanent record of achievements.</li>
+        </ul>
+      </section>
+      <section>
+        <h4 className="font-semibold mt-4 mb-1">Technologies Used</h4>
+        <ul className="list-disc list-inside ml-4">
+          <li><b>Frontend:</b>
+            <ul className="list-disc list-inside ml-6">
+              <li>React 18 with TypeScript, Vite build tool</li>
+              <li>Shadcn/UI components (Radix UI), styled with Tailwind CSS</li>
+              <li>TanStack React Query for server state management</li>
+              <li>Wouter for client-side routing</li>
+              <li>React Hook Form + Zod for form validation</li>
+              <li>JWT-based authentication with local storage</li>
+            </ul>
+          </li>
+          <li><b>Backend:</b>
+            <ul className="list-disc list-inside ml-6">
+              <li>Express.js with TypeScript on Node.js</li>
+              <li>RESTful API with middleware for logging and error handling</li>
+              <li>Custom Vite integration for hot module replacement</li>
+              <li>Modular route organization and storage abstraction</li>
+            </ul>
+          </li>
+          <li><b>Smart Contract Layer:</b>
+            <ul className="list-disc list-inside ml-6">
+              <li>Solidity for NFT certificate contracts</li>
+              <li>Deployed on Base Network (Ethereum L2 by Coinbase)</li>
+              <li>Ethers.js for frontend smart contract interaction</li>
+              <li>MetaMask wallet connection support</li>
+            </ul>
+          </li>
+          <li><b>Storage & Metadata:</b>
+            <ul className="list-disc list-inside ml-6">
+              <li>MongoDB for user and institution data</li>
+              <li>IPFS/Pinata for certificate metadata storage</li>
+              <li>JWT for stateless authentication</li>
+              <li>Route-level authentication guards</li>
+              <li>Separate flows for institutions and students</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h4 className="font-semibold mt-4 mb-1">How It Works</h4>
+        <ol className="list-decimal list-inside ml-4 space-y-2">
+          <li>
+            <b>Institution Registration & Certificate Issuance</b>
+            <ul className="list-disc list-inside ml-6">
+              <li>Institutions apply to join and submit required documentation (registration license, trading license, government approval, etc.).</li>
+              <li>EduCreds team reviews and approves applications before granting issuing rights.</li>
+              <li>Institutions fill out a form with student details; the smart contract mints an NFT certificate to the student's wallet.</li>
+            </ul>
+          </li>
+          <li>
+            <b>Certificate Verification (Employer / Third Party)</b>
+            <ul className="list-disc list-inside ml-6">
+              <li>Employers enter the certificate ID or student's wallet address.</li>
+              <li>The smart contract fetches certificate details directly from the blockchain—no middlemen, no forgery possible.</li>
+            </ul>
+          </li>
+        </ol>
+      </section>
+      <section>
+        <h4 className="font-semibold mt-4 mb-1">Key Benefits</h4>
+        <ul className="list-disc list-inside ml-4">
+          <li>Fraud-Proof: Certificates cannot be faked or altered.</li>
+          <li>Instant Verification: Employers can verify certificates in seconds without contacting institutions.</li>
+          <li>Global Recognition: Certificates are accessible worldwide.</li>
+          <li>Permanence: Certificates are stored permanently, independent of the issuing institution's server.</li>
+        </ul>
+      </section>
+      <section>
+        <p className="italic text-xs mt-4">This documentation provides a comprehensive overview of the EduCreds platform.</p>
+      </section>
+    </div>
+  </DialogContent>
+</Dialog>
+<Dialog open={contactOpen} onOpenChange={setContactOpen}>
+  <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Connect with EduCreds</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4 text-neutral-800">
+      <div className="flex items-center space-x-2">
+        <span className="font-semibold">Twitter/X:</span>
+        <a href="https://x.com/educreds_cert" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">x.com/educreds_cert</a>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className="font-semibold">Gmail:</span>
+        <a href="educhaincoltd@gmail.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Gmail</a>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className="font-semibold">Discord:</span>
+        <span className="text-neutral-500">coming soon</span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className="font-semibold">Telegram:</span>
+        <span className="text-neutral-500">coming soon</span>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
     </div>
   );
 }
