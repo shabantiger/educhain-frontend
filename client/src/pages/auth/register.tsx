@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,12 +37,26 @@ export default function Register() {
     },
   });
 
+  // Sync walletAddress from wallet connection to form state
+  useEffect(() => {
+    if (walletAddress) {
+      form.setValue("walletAddress", walletAddress);
+    }
+  }, [walletAddress]);
+
   const onSubmit = async (data: InsertInstitution) => {
     setIsLoading(true);
     setError("");
+    if (!walletAddress) {
+      setError("Please connect your wallet before registering your institution.");
+      setIsLoading(false);
+      return;
+    }
+    const payload = { ...data, role: "institution", walletAddress };
+    console.log("Registration payload:", payload);
     try {
       // Always register as institution
-      const response = await api.register({ ...data, role: "institution", walletAddress });
+      const response = await api.register(payload);
       auth.setToken(response.token);
       toast({
         title: "Registration successful!",

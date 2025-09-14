@@ -18,7 +18,7 @@ const adminLoginSchema = z.object({
 
 type AdminLoginForm = z.infer<typeof adminLoginSchema>;
 
-const ADMIN_EMAIL = 'admin@educreds.com';
+const ADMIN_EMAIL = 'admin@educhain.com';
 const ADMIN_PASSWORD = 'admin123'; // In production, use secure auth!
 
 export default function AdminLogin() {
@@ -89,7 +89,7 @@ export default function AdminLogin() {
                       <Input
                         {...field}
                         type="email"
-                        placeholder="admin@educreds.com"
+                        placeholder="admin@educhain.com"
                         data-testid="input-admin-email"
                       />
                     </FormControl>
@@ -128,12 +128,6 @@ export default function AdminLogin() {
               </Button>
             </form>
           </Form>
-          
-          <div className="mt-4 text-center">
-            <p className="text-sm text-neutral-600">
-              Demo credentials: admin@educreds.com / admin123
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
