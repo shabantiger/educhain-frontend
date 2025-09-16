@@ -3,7 +3,7 @@ import CryptoJS from 'crypto-js';
 // Admin authentication utilities
 export class AdminAuth {
   private static readonly ADMIN_EMAIL = 'admin@educreds.com';
-  private static readonly ADMIN_PASSWORD_HASH = ' 83d6358f4af742908e2ed9ae46a2a5bccc5cd68227202ff7d7dff919db0aeccf'; // SHA256 of 'password' + educreds_admin_2024
+  private static readonly ADMIN_PASSWORD_HASH = '83d6358f4af742908e2ed9ae46a2a5bccc5cd68227202ff7d7dff919db0aeccf'; // SHA256 of 'password' + educreds_admin_2024
   private static readonly SALT = 'educreds_admin_2025';
   private static readonly MAX_ATTEMPTS = 5;
   private static readonly LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
