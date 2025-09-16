@@ -54,6 +54,12 @@ export default function AdminLogin() {
           description: "Welcome to the admin dashboard",
         });
         setLocation("/admin/dashboard");
+        // Fallback redirect in case SPA navigation is blocked
+        setTimeout(() => {
+          if (!location.pathname.startsWith('/admin/dashboard')) {
+            window.location.href = '/admin/dashboard';
+          }
+        }, 0);
       } else {
         setError(result.message);
         if (result.remainingAttempts !== undefined) {
@@ -100,7 +106,7 @@ export default function AdminLogin() {
                       <Input
                         {...field}
                         type="email"
-                        placeholder="admin@educhain.com"
+                        placeholder="admin@educreds.com"
                         data-testid="input-admin-email"
                       />
                     </FormControl>
