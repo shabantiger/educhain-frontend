@@ -7,9 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AdminAuth } from "@/lib/admin-auth";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2, AlertCircle, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
 const adminLoginSchema = z.object({
   email: z.string().email("Valid email is required"),
@@ -17,9 +26,6 @@ const adminLoginSchema = z.object({
 });
 
 type AdminLoginForm = z.infer<typeof adminLoginSchema>;
-
-const ADMIN_EMAIL = 'admin@educhain.com';
-const ADMIN_PASSWORD = 'admin123'; // In production, use secure auth!
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
@@ -38,24 +44,27 @@ export default function AdminLogin() {
   const onSubmit = async (data: AdminLoginForm) => {
     setIsLoading(true);
     setError("");
-
-    // Simulate loading time
-    setTimeout(() => {
-      if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
-        localStorage.setItem('isAdmin', 'true');
-        localStorage.setItem('adminEmail', data.email);
-        
+    
+    try {
+      const result = AdminAuth.authenticate(data.email, data.password);
+      
+      if (result.success) {
         toast({
           title: "Admin login successful",
           description: "Welcome to the admin dashboard",
         });
-        
         setLocation("/admin/dashboard");
       } else {
-        setError("Invalid admin credentials");
+        setError(result.message);
+        if (result.remainingAttempts !== undefined) {
+          setError(`${result.message} (${result.remainingAttempts} attempts remaining)`);
+        }
       }
+    } catch (err: any) {
+      setError("Login error occurred");
+    } finally {
       setIsLoading(false);
-    }, 700);
+    }
   };
 
   return (
@@ -66,9 +75,11 @@ export default function AdminLogin() {
             <Shield className="h-12 w-12 text-blue-600" />
           </div>
           <CardTitle className="text-2xl font-bold">Admin Portal</CardTitle>
-          <p className="text-neutral-600">Enter admin credentials to access dashboard</p>
+          <p className="text-neutral-600">
+            Enter admin credentials to access dashboard
+          </p>
         </CardHeader>
-        
+
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -117,13 +128,15 @@ export default function AdminLogin() {
                 )}
               />
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={isLoading}
                 data-testid="button-admin-login"
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>

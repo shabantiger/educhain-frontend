@@ -1,6 +1,16 @@
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "https://educhain-backend-avmj.onrender.com").replace(/\/$/, "");
 console.log("Using API base:", API_BASE);
 import { auth, getAuthHeaders } from './auth';
+import { AdminAuth } from './admin-auth';
+
+// Helper function to get admin headers
+const getAdminHeaders = (): Record<string, string> => {
+  const adminEmail = AdminAuth.getAdminEmail();
+  if (!adminEmail) {
+    throw new Error('Admin not authenticated');
+  }
+  return { 'admin-email': adminEmail };
+};
 
 
 
@@ -49,7 +59,7 @@ export const api = {
   // Test admin endpoint
   testAdmin: async () => {
     const response = await fetch(`${API_BASE}/api/admin/test`, {
-      headers: { 'admin-email': 'admin@educreds.com' },
+      headers: getAdminHeaders(),
     });
     return handleResponse(response);
   },
@@ -302,14 +312,14 @@ export const api = {
   // Admin blockchain endpoints
   getBlockchainSummary: async () => {
     const response = await fetch(`${API_BASE}/api/admin/blockchain-summary`, {
-      headers: { 'admin-email': 'admin@educreds.com' },
+      headers: getAdminHeaders(),
     });
     return handleResponse(response);
   },
 
   getBlockchainStatusAll: async () => {
     const response = await fetch(`${API_BASE}/api/admin/blockchain-status`, {
-      headers: { 'admin-email': 'admin@educreds.com' },
+      headers: getAdminHeaders(),
     });
     return handleResponse(response);
   },
@@ -319,7 +329,7 @@ export const api = {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'admin-email': 'admin@educreds.com' 
+        ...getAdminHeaders()
       },
     });
     return handleResponse(response);
@@ -330,7 +340,7 @@ export const api = {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'admin-email': 'admin@educreds.com' 
+        ...getAdminHeaders()
       },
     });
     return handleResponse(response);
@@ -341,9 +351,10 @@ export const api = {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'admin-email': 'admin@educreds.com' 
+        ...getAdminHeaders()
       },
     });
     return handleResponse(response);
   },
+
 };

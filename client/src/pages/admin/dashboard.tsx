@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { AdminGuard } from "@/components/admin/AdminGuard";
 import { 
   Users, 
   DollarSign, 
@@ -60,6 +61,14 @@ const reviewSchema = z.object({
 type ReviewForm = z.infer<typeof reviewSchema>;
 
 export default function AdminDashboard() {
+  return (
+    <AdminGuard>
+      <AdminDashboardContent />
+    </AdminGuard>
+  );
+}
+
+function AdminDashboardContent() {
   const [, setLocation] = useLocation();
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
   const [revenueData, setRevenueData] = useState<RevenueData | null>(null);
@@ -79,15 +88,16 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem('isAdmin');
-    if (!isAdmin) {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
       setLocation('/admin/login');
       return;
     }
-    fetchAdminData();
+    // Optionally, validate token with backend here (see below)
+    fetchAdminData(token);
   }, [setLocation]);
 
-  const fetchAdminData = async () => {
+  const fetchAdminData = async (token: string) => {
     try {
       setLoading(true);
       const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
@@ -109,12 +119,13 @@ export default function AdminDashboard() {
         return;
       }
       
+      // Use token in Authorization header
       const [verificationResponse, revenueResponse] = await Promise.all([
         fetch(`${API_BASE}/api/admin/verification-requests`, {
-          headers: { 'admin-email': 'admin@educreds.com' }
+          headers: { 'Authorization': `Bearer ${token}` }
         }).catch(() => new Response('{"error": "Request failed"}', { status: 500 })),
         fetch(`${API_BASE}/api/admin/revenue`, {
-          headers: { 'admin-email': 'admin@educreds.com' }
+          headers: { 'Authorization': `Bearer ${token}` }
         }).catch(() => new Response('{"error": "Request failed"}', { status: 500 }))
       ]);
 
@@ -185,12 +196,14 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
     try {
       const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
-      
+      const token = localStorage.getItem('adminToken');
+      if (!token) throw new Error('No admin token found');
+
       const response = await fetch(`${API_BASE}/api/admin/verification-requests/${selectedRequest.verificationRequestId}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'admin-email': 'admin@educreds.com'
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(data)
       });
@@ -202,7 +215,7 @@ export default function AdminDashboard() {
       form.reset();
       
       // Refresh data
-      await fetchAdminData();
+      await fetchAdminData(token);
       
       toast({
         title: "Success",
@@ -229,9 +242,23 @@ export default function AdminDashboard() {
     });
   };
 
+  // Optional: Token validation with backend
+  const validateToken = async (token: string) => {
+    const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/validate-token`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('adminEmail');
+    localStorage.removeItem('adminToken'); // Remove token on logout
     setLocation('/admin/login');
   };
 
