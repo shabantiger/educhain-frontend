@@ -3,8 +3,8 @@ import CryptoJS from 'crypto-js';
 // Admin authentication utilities
 export class AdminAuth {
   private static readonly ADMIN_EMAIL = 'admin@educreds.com';
-  private static readonly ADMIN_PASSWORD_HASH = '83d6358f4af742908e2ed9ae46a2a5bccc5cd68227202ff7d7dff919db0aeccf'; // SHA256 of 'password' + educreds_admin_2024
-  private static readonly SALT = 'educreds_admin_2025';
+  private static readonly ADMIN_PASSWORD_HASH = 'd5875d0e0e4eef32053228a8329c7ffb58c683d97412458d524f1995f01fa895'; // SHA256 of 'password' + educreds_admin_2024
+  private static readonly SALT = 'educreds_admin_2024';
   private static readonly MAX_ATTEMPTS = 5;
   private static readonly LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 
@@ -101,6 +101,8 @@ export class AdminAuth {
     localStorage.setItem('isAdmin', 'true');
     // Force-store canonical admin email to avoid header mismatches
     localStorage.setItem('adminEmail', this.ADMIN_EMAIL);
+    // Store a simple admin token for dashboard checks
+    localStorage.setItem('adminToken', 'admin-session');
     localStorage.setItem('adminLoginTime', Date.now().toString());
     
     return {

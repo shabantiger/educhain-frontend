@@ -49,13 +49,15 @@ export default function AdminLogin() {
       const result = AdminAuth.authenticate(data.email, data.password);
       
       if (result.success) {
-      toast({
-        title: "Admin login successful",
-        description: "Welcome to the admin dashboard",
-      });
-        // Ensure canonical admin email is stored and force immediate redirect
+        toast({
+          title: "Admin login successful",
+          description: "Welcome to the admin dashboard",
+        });
+        // Ensure canonical admin email and token are stored for dashboard checks
         localStorage.setItem('adminEmail', 'admin@educreds.com');
-        window.location.replace('/admin/dashboard');
+        localStorage.setItem('adminToken', 'admin-session');
+        // Navigate via router to avoid full page reload issues
+        setLocation('/admin/dashboard');
         return; // stop further execution
       } else {
         setError(result.message);
