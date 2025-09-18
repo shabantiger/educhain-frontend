@@ -43,7 +43,7 @@ This document outlines the security measures implemented for admin authenticatio
 ⚠️ **IMPORTANT**: Change the default password before deploying to production!
 
 ### How to Change Admin Password
-
+node -e "const crypto = require('crypto'); console.log('New hash for password + educreds_admin_2024:', crypto.createHash('sha256').update('password' + 'educreds_admin_2024').digest('hex'));"
 1. Generate a new password hash:
 ```javascript
 import CryptoJS from 'crypto-js';

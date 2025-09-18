@@ -21,6 +21,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
       setIsAuthenticated(authenticated);
       
       if (authenticated) {
+        // Normalize stored admin email to canonical to match backend
+        const canonicalEmail = 'admin@educreds.com';
+        const currentEmail = AdminAuth.getAdminEmail();
+        if (currentEmail && currentEmail.toLowerCase() !== canonicalEmail) {
+          localStorage.setItem('adminEmail', canonicalEmail);
+        }
         const info = AdminAuth.getSessionInfo();
         setSessionInfo(info);
       }
@@ -124,6 +130,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
     </div>
   );
 }
+
+
+
+
+
+
 
 
 

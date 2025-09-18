@@ -119,13 +119,18 @@ function AdminDashboardContent() {
         return;
       }
       
-      // Use token in Authorization header
+      // Admin endpoints require 'admin-email' header (no Bearer token)
+      const adminEmail = localStorage.getItem('adminEmail');
+      if (!adminEmail) {
+        throw new Error('Admin email missing. Please login again.');
+      }
+
       const [verificationResponse, revenueResponse] = await Promise.all([
         fetch(`${API_BASE}/api/admin/verification-requests`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'admin-email': adminEmail }
         }).catch(() => new Response('{"error": "Request failed"}', { status: 500 })),
         fetch(`${API_BASE}/api/admin/revenue`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'admin-email': adminEmail }
         }).catch(() => new Response('{"error": "Request failed"}', { status: 500 }))
       ]);
 
@@ -196,14 +201,14 @@ function AdminDashboardContent() {
     setIsSubmitting(true);
     try {
       const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
-      const token = localStorage.getItem('adminToken');
-      if (!token) throw new Error('No admin token found');
+      const adminEmail = localStorage.getItem('adminEmail');
+      if (!adminEmail) throw new Error('Admin email missing');
 
       const response = await fetch(`${API_BASE}/api/admin/verification-requests/${selectedRequest.verificationRequestId}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'admin-email': adminEmail
         },
         body: JSON.stringify(data)
       });
@@ -242,17 +247,11 @@ function AdminDashboardContent() {
     });
   };
 
-  // Optional: Token validation with backend
-  const validateToken = async (token: string) => {
-    const API_BASE = import.meta.env.VITE_API_BASE || 'https://educhain-backend-avmj.onrender.com';
-    try {
-      const res = await fetch(`${API_BASE}/api/admin/validate-token`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      return res.ok;
-    } catch {
-      return false;
-    }
+  // Admin session check helper
+  const validateAdminSession = (): boolean => {
+    const email = localStorage.getItem('adminEmail');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    return Boolean(email && isAdmin);
   };
 
   const handleLogout = () => {

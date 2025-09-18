@@ -49,17 +49,14 @@ export default function AdminLogin() {
       const result = AdminAuth.authenticate(data.email, data.password);
       
       if (result.success) {
-        toast({
-          title: "Admin login successful",
-          description: "Welcome to the admin dashboard",
-        });
-        setLocation("/admin/dashboard");
-        // Fallback redirect in case SPA navigation is blocked
-        setTimeout(() => {
-          if (!location.pathname.startsWith('/admin/dashboard')) {
-            window.location.href = '/admin/dashboard';
-          }
-        }, 0);
+      toast({
+        title: "Admin login successful",
+        description: "Welcome to the admin dashboard",
+      });
+        // Ensure canonical admin email is stored and force immediate redirect
+        localStorage.setItem('adminEmail', 'admin@educreds.com');
+        window.location.replace('/admin/dashboard');
+        return; // stop further execution
       } else {
         setError(result.message);
         if (result.remainingAttempts !== undefined) {

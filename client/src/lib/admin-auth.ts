@@ -67,8 +67,10 @@ export class AdminAuth {
       };
     }
 
-    // Validate email
-    if (email !== this.ADMIN_EMAIL) {
+    // Validate email (normalize to lowercase)
+    const emailNormalized = (email || '').trim().toLowerCase();
+    const adminCanonical = this.ADMIN_EMAIL.toLowerCase();
+    if (emailNormalized !== adminCanonical) {
       this.recordFailedAttempt();
       const attempts = parseInt(localStorage.getItem('admin_attempts') || '0');
       const remaining = this.MAX_ATTEMPTS - attempts;
@@ -97,7 +99,8 @@ export class AdminAuth {
     // Successful authentication
     this.clearFailedAttempts();
     localStorage.setItem('isAdmin', 'true');
-    localStorage.setItem('adminEmail', email);
+    // Force-store canonical admin email to avoid header mismatches
+    localStorage.setItem('adminEmail', this.ADMIN_EMAIL);
     localStorage.setItem('adminLoginTime', Date.now().toString());
     
     return {
